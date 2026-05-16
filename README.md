@@ -1,83 +1,149 @@
-# 🏗 Scaffold-ETH 2
+# BondChain
 
-<h4 align="center">
-  <a href="https://docs.scaffoldeth.io">Documentation</a> |
-  <a href="https://scaffoldeth.io">Website</a>
-</h4>
+BondChain is an NDI-gated document signing and verification app. It binds a Bhutan NDI identity to a Privy server wallet, signs document hashes through Privy, stores document files on IPFS through Pinata, and writes audit records to Ethereum Sepolia.
 
-🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on the Ethereum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
+## What It Does
 
-> [!NOTE]
-> 🤖 Scaffold-ETH 2 is AI-ready! It has everything agents need to build on Ethereum. Check `.agents/`, `.claude/`, `.opencode` or `.cursor/` for more info.
+- Onboard a Bhutan NDI user and bind their DID to a Privy wallet.
+- Upload PDF documents to public IPFS through Pinata.
+- Sign documents with a Privy server wallet after NDI login.
+- Send user-to-user signing requests by email.
+- Validate the target signer by CID hash from their NDI proof.
+- Verify a linked signature chain from requester to target signer.
+- Show a private history page for uploaded, sent, received, and signed documents.
 
-⚙️ Built using NextJS, RainbowKit, Foundry, Wagmi, Viem, and Typescript.
+NDI is only used for identity and session gating. Privy performs all cryptographic signing.
 
-- ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
-- 🪝 **[Custom hooks](https://docs.scaffoldeth.io/hooks/)**: Collection of React hooks wrapper around [wagmi](https://wagmi.sh/) to simplify interactions with smart contracts with typescript autocompletion.
-- 🧱 [**Components**](https://docs.scaffoldeth.io/components/): Collection of common web3 components to quickly build your frontend.
-- 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
+## App Routes
 
-![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
+| Route | Purpose |
+|---|---|
+| `/` | BondChain overview and entry points |
+| `/onboard` | NDI login and Privy wallet binding |
+| `/user-to-user` | Upload a PDF, sign it, and send a target signer request |
+| `/user-to-user/sign/[token]` | Target signer PDF preview and countersigning flow |
+| `/history` | Private NDI-gated signing history |
+| `/sign` | API signing overlay for external apps |
+| `/verify/[signatureHash]` | Public verification page with linked signature chain |
+| `/verify/[signatureHash]/signer` | NDI-based signer hash verification |
 
-## Requirements
+Developer wallet-connect UI, faucet UI, block explorer pages, and debug contract screens are intentionally removed from the product navigation.
 
-Before you begin, you need to install the following tools:
+## Repository Structure
 
-- [Node (>= v20.18.3)](https://nodejs.org/en/download/)
-- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
-- [Git](https://git-scm.com/downloads)
-
-## Quickstart
-
-To get started with Scaffold-ETH 2, follow the steps below:
-
-1. Install dependencies if it was skipped in CLI:
-
+```text
+packages/backend   Express API, Prisma, NDI, Privy, Pinata, email, relayer
+packages/nextjs    BondChain frontend
+packages/foundry   Solidity contracts and Foundry tests
+API.md             External signing and peer request API details
+Onboarding.md      Current NDI + Privy onboarding flow
 ```
-cd my-dapp-example
+
+## Environment
+
+Backend variables live in `packages/backend/.env`.
+
+Required core values:
+
+```env
+PORT=4000
+FRONTEND_ORIGIN=http://localhost:3000
+DATABASE_URL=postgresql://...
+SESSION_SECRET=replace-with-a-long-random-secret
+
+PRIVY_APP_ID=
+PRIVY_APP_SECRET=
+PRIVY_AUTHORIZATION_PUBLIC_KEY=
+PRIVY_AUTHORIZATION_PRIVATE_KEY=
+
+PINATA_JWT=
+IPFS_GATEWAY_BASE=https://your-gateway.mypinata.cloud
+
+RPC_URL=
+RELAYER_PRIVATE_KEY=
+IDENTITY_REGISTRY_ADDRESS=
+DOCUMENT_REGISTRY_ADDRESS=
+SIGNATURE_LOG_ADDRESS=
+WORKFLOW_TRACKER_ADDRESS=
+
+GMAIL_USER=
+GMAIL_APP_PASSWORD=
+MAIL_FROM=
+```
+
+NDI staging defaults are already provided in the backend config and `.env.example`.
+
+Frontend variables live in `packages/nextjs/.env.local`.
+
+```env
+NEXT_PUBLIC_BONDCHAIN_API_URL=http://localhost:4000
+```
+
+## Local Development
+
+Install dependencies:
+
+```bash
 yarn install
 ```
 
-2. Run a local network in the first terminal:
+Deploy or configure contracts, then apply backend migrations:
 
-```
-yarn chain
-```
-
-This command starts a local Ethereum network using Foundry. The network runs on your local machine and can be used for testing and development. You can customize the network configuration in `packages/foundry/foundry.toml`.
-
-3. On a second terminal, deploy the test contract:
-
-```
-yarn deploy
+```bash
+yarn backend:prisma:migrate
 ```
 
-This command deploys a test smart contract to the local network. The contract is located in `packages/foundry/contracts` and can be modified to suit your needs. The `yarn deploy` command uses the deploy script located in `packages/foundry/script` to deploy the contract to the network. You can also customize the deploy script.
+Start the backend:
 
-4. On a third terminal, start your NextJS app:
-
+```bash
+yarn backend:dev
 ```
+
+Start the frontend:
+
+```bash
 yarn start
 ```
 
-Visit your app on: `http://localhost:3000`. You can interact with your smart contract using the `Debug Contracts` page. You can tweak the app config in `packages/nextjs/scaffold.config.ts`.
+Open:
 
-Run smart contract test with `yarn foundry:test`
+```text
+http://localhost:3000
+```
 
-- Edit your smart contracts in `packages/foundry/contracts`
-- Edit your frontend homepage at `packages/nextjs/app/page.tsx`. For guidance on [routing](https://nextjs.org/docs/app/building-your-application/routing/defining-routes) and configuring [pages/layouts](https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts) checkout the Next.js documentation.
-- Edit your deployment scripts in `packages/foundry/script`
+## Contract Workflow
 
+Contracts are in `packages/foundry/contracts`.
 
-## Documentation
+Run tests:
 
-Visit our [docs](https://docs.scaffoldeth.io) to learn how to start building with Scaffold-ETH 2.
+```bash
+yarn foundry:test
+```
 
-To know more about its features, check out our [website](https://scaffoldeth.io).
+Deploy contracts:
 
-## Contributing to Scaffold-ETH 2
+```bash
+yarn deploy --network sepolia
+```
 
-We welcome contributions to Scaffold-ETH 2!
+After redeploying, update the backend contract address environment variables. The current `DocumentRegistry` supports multiple records for the same `docHash`; redeploy it before relying on duplicate document hash registrations on-chain.
 
-Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/scaffold-eth-2/blob/main/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-ETH 2.# bondchain
+## Verification Commands
+
+```bash
+yarn backend:build
+yarn next:check-types
+yarn lint
+yarn foundry:test
+yarn next:build
+```
+
+`yarn next:build` can show non-fatal dependency warnings from wallet-related packages still present in the dependency tree, but the BondChain UI no longer exposes wallet connect or debug contract flows.
+
+## Notes
+
+- PDF uploads are sent to Pinata with `network=public`.
+- `docHash` is not unique in the database or `DocumentRegistry`; repeated uploads create separate records.
+- User-to-user target CID values are normalized and stored only as SHA-256 hashes.
+- Public verification shows signer wallet hashes, not raw signer wallet addresses.
