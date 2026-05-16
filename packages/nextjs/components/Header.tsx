@@ -121,7 +121,7 @@ export const Header = () => {
             <span className="text-[10px] uppercase font-bold tracking-widest text-primary/60">Digital Sovereignty</span>
           </div>
         </Link>
-        <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-1 gap-2">
+        <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-1 gap-2 ml-34">
           <HeaderMenuLinks />
         </ul>
       </div>
