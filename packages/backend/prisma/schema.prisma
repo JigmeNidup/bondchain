@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String      @id @default(cuid())
+  didKey              String      @unique
+  privyWalletId       String
+  privyWalletAddress  String
+  cidHash             String?
+  fullName            String?
+  linkageHash         String      @unique
+  createdAt           DateTime    @default(now())
+  documents           Document[]  @relation("UserDocuments")
+  signatures          Signature[] @relation("UserSignatures")
+  peerRequests        PeerSigningRequest[] @relation("PeerRequestRequester")
+}
+
+model Document {
+  id                  String      @id @default(cuid())
+  ipfsCid             String
+  fileName            String?
+  mimeType            String?
+  docHash             String
+  ownerDid            String
+  ownerWallet         String
+  txHash              String?
+  createdAt           DateTime    @default(now())
+  owner               User        @relation("UserDocuments", fields: [ownerDid], references: [didKey])
+  peerRequests        PeerSigningRequest[]
+
+  @@index([docHash])
+}
+
+model Signature {
+  id                  String      @id @default(cuid())
+  docHash             String
+  signerDid           String
+  signerWallet        String
+  signerWalletHash    String
+  payloadHash         String
+  previousSignatureHash String
+  signature           String
+  signatureHash       String      @unique
+  txHash              String
+  createdAt           DateTime    @default(now())
+  signer              User        @relation("UserSignatures", fields: [signerDid], references: [didKey])
+}
+
+model Workflow {
+  id                  String      @id @default(cuid())
+  docHash             String
+  serviceId           String?
+  currentStep         Int         @default(0)
+  status              String      @default("PENDING")
+  createdByDid        String
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  steps               WorkflowStep[]
+}
+
+model WorkflowStep {
+  id                  String      @id @default(cuid())
+  workflowId          String
+  stepNumber          Int
+  signerDid           String
+  action              String
+  txHash              String?
+  reason              String?
+  createdAt           DateTime    @default(now())
+  workflow            Workflow    @relation(fields: [workflowId], references: [id])
+}
+
+model SigningSession {
+  id                  String      @id @default(cuid())
+  token               String      @unique
+  documentHash        String
+  previousSignatureHash String?
+  documentName        String?
+  callbackUrl         String
+  status              String      @default("PENDING")
+  signatureHash       String?
+  txHash              String?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+}
+
+model PeerSigningRequest {
+  id                    String    @id @default(cuid())
+  token                 String    @unique
+  documentId            String
+  docHash               String
+  requesterDid          String
+  requesterEmail        String
+  targetEmail           String
+  targetCidHash         String
+  requesterSignatureHash String
+  targetSignatureHash   String?
+  status                String    @default("PENDING")
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  signedAt              DateTime?
+  document              Document  @relation(fields: [documentId], references: [id])
+  requester             User      @relation("PeerRequestRequester", fields: [requesterDid], references: [didKey])
+
+  @@index([requesterDid])
+  @@index([targetCidHash])
+  @@index([docHash])
+  @@index([documentId])
+}

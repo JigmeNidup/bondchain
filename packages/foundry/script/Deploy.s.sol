@@ -1,8 +1,8 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "./DeployHelpers.s.sol";
-import { DeployYourContract } from "./DeployYourContract.s.sol";
+import { ScaffoldETHDeploy } from "./DeployHelpers.s.sol";
+import { DeployBondChain } from "./DeployBondChain.s.sol";
 
 /**
  * @notice Main deployment script for all contracts
@@ -15,8 +15,8 @@ contract DeployScript is ScaffoldETHDeploy {
         // Deploys all your contracts sequentially
         // Add new deployments here when needed
 
-        DeployYourContract deployYourContract = new DeployYourContract();
-        deployYourContract.run();
+        DeployBondChain deployBondChain = new DeployBondChain();
+        deployBondChain.run();
 
         // Deploy another contract
         // DeployMyContract myContract = new DeployMyContract();

@@ -1,6 +1,9 @@
 # dependencies
 node_modules
 
+# secrets
+.secrets
+
 # yarn
 .yarn/*
 !.yarn/patches

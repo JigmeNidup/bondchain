@@ -4,6 +4,2283 @@
  */
 import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
-const deployedContracts = {} as const;
+const deployedContracts = {
+  31337: {
+    IdentityRegistry: {
+      address: "0x700b6a60ce7eaaea56f065753d8dcb9653dbad35",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "initialOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "getIdentity",
+          inputs: [
+            {
+              name: "linkageHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "wallet",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "exists",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "owner",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "registerIdentity",
+          inputs: [
+            {
+              name: "linkageHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "privyWallet",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "created",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "renounceOwnership",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "transferOwnership",
+          inputs: [
+            {
+              name: "newOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "verifyIdentity",
+          inputs: [
+            {
+              name: "linkageHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "walletLinkageHashes",
+          inputs: [
+            {
+              name: "wallet",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "linkageHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "event",
+          name: "IdentityBound",
+          inputs: [
+            {
+              name: "linkageHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "privyWallet",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "OwnershipTransferred",
+          inputs: [
+            {
+              name: "previousOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "newOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "EmptyLinkageHash",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "EmptyWallet",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "IdentityAlreadyBound",
+          inputs: [
+            {
+              name: "linkageHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "OwnableInvalidOwner",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "OwnableUnauthorizedAccount",
+          inputs: [
+            {
+              name: "account",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 1,
+    },
+    DocumentRegistry: {
+      address: "0xa15bb66138824a1c7167f5e85b957d04dd34e468",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "initialOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "getDocument",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "ownerWallet",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "ipfsCid",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "exists",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "owner",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "registerDocument",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "ownerWallet",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "ipfsCid",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          outputs: [
+            {
+              name: "created",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "renounceOwnership",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "transferOwnership",
+          inputs: [
+            {
+              name: "newOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "event",
+          name: "DocumentRegistered",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "owner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "ipfsCid",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "OwnershipTransferred",
+          inputs: [
+            {
+              name: "previousOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "newOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "DocumentAlreadyRegistered",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "EmptyDocumentHash",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "EmptyIpfsCid",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "EmptyOwner",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "OwnableInvalidOwner",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "OwnableUnauthorizedAccount",
+          inputs: [
+            {
+              name: "account",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 2,
+    },
+    SignatureLog: {
+      address: "0xb19b36b1456e65e3a6d514d3f715f204bd59f431",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "initialOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "getDocumentSignatureAt",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "index",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getDocumentSignatureCount",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getSignature",
+          inputs: [
+            {
+              name: "sigHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "payloadHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "previousSigHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "signerHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "exists",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "logDelegation",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "fromHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "toHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "logSignature",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "payloadHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "sigHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "previousSigHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "signerHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "created",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "owner",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "renounceOwnership",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "transferOwnership",
+          inputs: [
+            {
+              name: "newOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "event",
+          name: "DocumentSigned",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "signerHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "sigHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "payloadHash",
+              type: "bytes32",
+              indexed: false,
+              internalType: "bytes32",
+            },
+            {
+              name: "previousSigHash",
+              type: "bytes32",
+              indexed: false,
+              internalType: "bytes32",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "OwnershipTransferred",
+          inputs: [
+            {
+              name: "previousOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "newOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "SigningDelegated",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "fromHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "toHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "EmptyDocumentHash",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "EmptySignatureHash",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "EmptySignerHash",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "OwnableInvalidOwner",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "OwnableUnauthorizedAccount",
+          inputs: [
+            {
+              name: "account",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "SignatureAlreadyLogged",
+          inputs: [
+            {
+              name: "sigHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 2,
+    },
+    WorkflowTracker: {
+      address: "0x8ce361602b935680e8dec218b820ff5056beb7af",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "initialOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "advanceStep",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "step",
+              type: "uint8",
+              internalType: "uint8",
+            },
+            {
+              name: "approver",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "createWorkflow",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "created",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "finalizeDocument",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "verificationUrl",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "getWorkflow",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "currentStep",
+              type: "uint8",
+              internalType: "uint8",
+            },
+            {
+              name: "status",
+              type: "uint8",
+              internalType: "enum WorkflowTracker.WorkflowStatus",
+            },
+            {
+              name: "verificationUrl",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "updatedAt",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "exists",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "markResubmitted",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "owner",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "rejectWorkflow",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "approver",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "reason",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "renounceOwnership",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "transferOwnership",
+          inputs: [
+            {
+              name: "newOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "event",
+          name: "DocumentFinalized",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "verificationUrl",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "OwnershipTransferred",
+          inputs: [
+            {
+              name: "previousOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "newOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "WorkflowCreated",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "WorkflowRejected",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "approver",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "reason",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "WorkflowStepCompleted",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "step",
+              type: "uint8",
+              indexed: false,
+              internalType: "uint8",
+            },
+            {
+              name: "approver",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "EmptyApprover",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "EmptyDocumentHash",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "OwnableInvalidOwner",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "OwnableUnauthorizedAccount",
+          inputs: [
+            {
+              name: "account",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "WorkflowMissing",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 2,
+    },
+  },
+  11155111: {
+    IdentityRegistry: {
+      address: "0xac11d4d88f2e86bccc8a93929b105f54c84d5fdf",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "initialOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "getIdentity",
+          inputs: [
+            {
+              name: "linkageHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "wallet",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "exists",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "owner",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "registerIdentity",
+          inputs: [
+            {
+              name: "linkageHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "privyWallet",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "created",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "renounceOwnership",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "transferOwnership",
+          inputs: [
+            {
+              name: "newOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "verifyIdentity",
+          inputs: [
+            {
+              name: "linkageHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "walletLinkageHashes",
+          inputs: [
+            {
+              name: "wallet",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "linkageHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "event",
+          name: "IdentityBound",
+          inputs: [
+            {
+              name: "linkageHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "privyWallet",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "OwnershipTransferred",
+          inputs: [
+            {
+              name: "previousOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "newOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "EmptyLinkageHash",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "EmptyWallet",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "IdentityAlreadyBound",
+          inputs: [
+            {
+              name: "linkageHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "OwnableInvalidOwner",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "OwnableUnauthorizedAccount",
+          inputs: [
+            {
+              name: "account",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 10863072,
+    },
+    DocumentRegistry: {
+      address: "0x91418636cc0828fb7880c362e67c6ae960cb6b42",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "initialOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "getDocument",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "ownerWallet",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "ipfsCid",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "exists",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "owner",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "registerDocument",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "ownerWallet",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "ipfsCid",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          outputs: [
+            {
+              name: "created",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "renounceOwnership",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "transferOwnership",
+          inputs: [
+            {
+              name: "newOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "event",
+          name: "DocumentRegistered",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "owner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "ipfsCid",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "OwnershipTransferred",
+          inputs: [
+            {
+              name: "previousOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "newOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "DocumentAlreadyRegistered",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "EmptyDocumentHash",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "EmptyIpfsCid",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "EmptyOwner",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "OwnableInvalidOwner",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "OwnableUnauthorizedAccount",
+          inputs: [
+            {
+              name: "account",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 10863072,
+    },
+    SignatureLog: {
+      address: "0x6b67dd127e5e87fc69b583e79385069d5a6af286",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "initialOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "getDocumentSignatureAt",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "index",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getDocumentSignatureCount",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getSignature",
+          inputs: [
+            {
+              name: "sigHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "payloadHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "previousSigHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "signerHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "exists",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "logDelegation",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "fromHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "toHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "logSignature",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "payloadHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "sigHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "previousSigHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "signerHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "created",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "owner",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "renounceOwnership",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "transferOwnership",
+          inputs: [
+            {
+              name: "newOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "event",
+          name: "DocumentSigned",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "signerHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "sigHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "payloadHash",
+              type: "bytes32",
+              indexed: false,
+              internalType: "bytes32",
+            },
+            {
+              name: "previousSigHash",
+              type: "bytes32",
+              indexed: false,
+              internalType: "bytes32",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "OwnershipTransferred",
+          inputs: [
+            {
+              name: "previousOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "newOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "SigningDelegated",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "fromHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "toHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "EmptyDocumentHash",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "EmptySignatureHash",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "EmptySignerHash",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "OwnableInvalidOwner",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "OwnableUnauthorizedAccount",
+          inputs: [
+            {
+              name: "account",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "SignatureAlreadyLogged",
+          inputs: [
+            {
+              name: "sigHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 10863072,
+    },
+    WorkflowTracker: {
+      address: "0x7e9722cb5a59bb8b5eb0f5206bf13ba3fdb9d9fd",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "initialOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "advanceStep",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "step",
+              type: "uint8",
+              internalType: "uint8",
+            },
+            {
+              name: "approver",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "createWorkflow",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "created",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "finalizeDocument",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "verificationUrl",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "getWorkflow",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "currentStep",
+              type: "uint8",
+              internalType: "uint8",
+            },
+            {
+              name: "status",
+              type: "uint8",
+              internalType: "enum WorkflowTracker.WorkflowStatus",
+            },
+            {
+              name: "verificationUrl",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "updatedAt",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "exists",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "markResubmitted",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "owner",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "rejectWorkflow",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "approver",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "reason",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "renounceOwnership",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "transferOwnership",
+          inputs: [
+            {
+              name: "newOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "event",
+          name: "DocumentFinalized",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "verificationUrl",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "OwnershipTransferred",
+          inputs: [
+            {
+              name: "previousOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "newOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "WorkflowCreated",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "WorkflowRejected",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "approver",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "reason",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "WorkflowStepCompleted",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "step",
+              type: "uint8",
+              indexed: false,
+              internalType: "uint8",
+            },
+            {
+              name: "approver",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "EmptyApprover",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "EmptyDocumentHash",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "OwnableInvalidOwner",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "OwnableUnauthorizedAccount",
+          inputs: [
+            {
+              name: "account",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "WorkflowMissing",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 10863072,
+    },
+  },
+} as const;
 
 export default deployedContracts satisfies GenericContractsDeclaration;

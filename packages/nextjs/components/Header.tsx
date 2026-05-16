@@ -5,7 +5,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { hardhat } from "viem/chains";
-import { Bars3Icon, BugAntIcon } from "@heroicons/react/24/outline";
+import {
+  Bars3Icon,
+  BugAntIcon,
+  ClockIcon,
+  DocumentCheckIcon,
+  FingerPrintIcon,
+  ShieldCheckIcon,
+  UserGroupIcon,
+} from "@heroicons/react/24/outline";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick, useTargetNetwork } from "~~/hooks/scaffold-eth";
 
@@ -19,6 +27,31 @@ export const menuLinks: HeaderMenuLink[] = [
   {
     label: "Home",
     href: "/",
+  },
+  {
+    label: "Onboard",
+    href: "/onboard",
+    icon: <FingerPrintIcon className="h-4 w-4" />,
+  },
+  {
+    label: "User Signing",
+    href: "/user-to-user",
+    icon: <UserGroupIcon className="h-4 w-4" />,
+  },
+  {
+    label: "API Sign",
+    href: "/sign",
+    icon: <DocumentCheckIcon className="h-4 w-4" />,
+  },
+  {
+    label: "History",
+    href: "/history",
+    icon: <ClockIcon className="h-4 w-4" />,
+  },
+  {
+    label: "Verify",
+    href: "/verify/demo",
+    icon: <ShieldCheckIcon className="h-4 w-4" />,
   },
   {
     label: "Debug Contracts",
@@ -83,11 +116,11 @@ export const Header = () => {
         </details>
         <Link href="/" passHref className="hidden lg:flex items-center gap-2 ml-4 mr-6 shrink-0">
           <div className="flex relative w-10 h-10">
-            <Image alt="SE2 logo" className="cursor-pointer" fill src="/logo.svg" />
+            <Image alt="BondChain logo" className="cursor-pointer" fill src="/logo.svg" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold leading-tight">Scaffold-ETH</span>
-            <span className="text-xs">Ethereum dev stack</span>
+            <span className="font-bold leading-tight">BondChain</span>
+            <span className="text-xs">Signed on chain</span>
           </div>
         </Link>
         <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-1 gap-2">
