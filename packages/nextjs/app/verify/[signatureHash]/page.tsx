@@ -118,7 +118,7 @@ const VerifyPage = () => {
 
                 <div className="relative z-10 flex-1 text-center md:text-left">
                   <span className="text-xs font-black uppercase tracking-[0.3em] opacity-60">Verification Result</span>
-                  <h2 className="text-4xl font-black mt-2 mb-4">
+                  <h2 className="text-2xl font-black mt-2 mb-4">
                     {verification.chainStatus === "VERIFIED" ? "Integrity Validated" : "Chain Compromised"}
                   </h2>
                   <p className="opacity-70 leading-relaxed m-0 max-w-md">
