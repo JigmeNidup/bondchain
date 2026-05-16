@@ -4,18 +4,15 @@ import React, { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { hardhat } from "viem/chains";
 import {
   Bars3Icon,
-  BugAntIcon,
   ClockIcon,
   DocumentCheckIcon,
   FingerPrintIcon,
   ShieldCheckIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/outline";
-import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
-import { useOutsideClick, useTargetNetwork } from "~~/hooks/scaffold-eth";
+import { useOutsideClick } from "~~/hooks/scaffold-eth/useOutsideClick";
 
 type HeaderMenuLink = {
   label: string;
@@ -53,11 +50,6 @@ export const menuLinks: HeaderMenuLink[] = [
     href: "/verify/demo",
     icon: <ShieldCheckIcon className="h-4 w-4" />,
   },
-  {
-    label: "Debug Contracts",
-    href: "/debug",
-    icon: <BugAntIcon className="h-4 w-4" />,
-  },
 ];
 
 export const HeaderMenuLinks = () => {
@@ -90,9 +82,6 @@ export const HeaderMenuLinks = () => {
  * Site header
  */
 export const Header = () => {
-  const { targetNetwork } = useTargetNetwork();
-  const isLocalNetwork = targetNetwork.id === hardhat.id;
-
   const burgerMenuRef = useRef<HTMLDetailsElement>(null);
   useOutsideClick(burgerMenuRef, () => {
     burgerMenuRef?.current?.removeAttribute("open");
@@ -128,8 +117,9 @@ export const Header = () => {
         </ul>
       </div>
       <div className="navbar-end grow mr-4">
-        <RainbowKitCustomConnectButton />
-        {isLocalNetwork && <FaucetButton />}
+        <Link href="/user-to-user" className="btn btn-primary btn-sm min-h-10 rounded-lg">
+          Start signing
+        </Link>
       </div>
     </div>
   );
