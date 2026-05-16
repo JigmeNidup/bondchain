@@ -491,3 +491,133 @@ curl -X POST "http://localhost:4000/api/signing/initiate" \
 - Treat `signatureHash` as the public verification ID.
 - Use HTTPS callback URLs outside local development.
 - Keep BondChain backend credentials server-side only.
+
+## DMS integration (notesheets)
+
+DMS uses BondChain for notesheet workflow signing (requester submit, reviewer approve, approver approve). BondChain API details above apply to `lib/bondchain.js`; DMS adds canonical content hashing, persistence, and a **Check chain** integrity pass.
+
+### Environment (DMS)
+
+| Variable | Description |
+|---|---|
+| `BONDCHAIN_ENABLED` | When not `true`, signing UI and initiate routes are disabled. |
+| `BONDCHAIN_API_URL` | BondChain backend base URL (e.g. `http://localhost:4000`). |
+| `APP_URL` | DMS public URL for callback construction (e.g. `http://localhost:3005`). |
+
+### DMS routes
+
+| Method | Path | Purpose |
+|---|---|---|
+| `POST` | `/api/documents/notesheets/[id]/bondchain/initiate` | Start signing; passes `previousSignatureHash` from the prior callback when chaining. |
+| `GET` | `/api/documents/notesheets/bondchain/callback` | BondChain redirect target; persists signature + `verification_link`. |
+| `GET` | `/api/documents/notesheets/[id]/bondchain/verify` | **Check chain**: recompute content hash + optional BondChain `GET /verify/:signatureHash`. |
+
+Initiate and verify require an authenticated session with access to the notesheet. `signer_role` is stored in DMS only (audit/UI); it is **not** sent to BondChain.
+
+### Content hash (DMS)
+
+Notesheet `documentHash` is Keccak-256 over canonical JSON built in `utils/notesheetContentHash.js` (sanitized HTML, reviewers, attachments, etc.). After each successful callback, DMS stores the hash on `notesheets.document_content_hash` and per row in `document_bondchain_signatures.document_hash`.
+
+Chained signing on BondChain:
+
+```text
+payloadHash = keccak256(abi.encodePacked(documentHash, previousSignatureHash))
+```
+
+First signer omits `previousSignatureHash` (zero hash on-chain).
+
+### Check chain — `GET .../bondchain/verify`
+
+Recomputes the live content hash from the database and compares it to each stored signature in chronological order. Optionally proxies BondChain's public verification for the latest (or `?signatureHash=`) on-chain chain.
+
+**Success response shape:**
+
+```json
+{
+  "contentIntegrity": {
+    "valid": true,
+    "hasSignatures": true,
+    "status": "review",
+    "isApproved": false,
+    "mismatchSeverity": null,
+    "currentHash": "0x...",
+    "storedHash": "0x...",
+    "latestSignedHash": "0x...",
+    "signedHashes": ["0x..."],
+    "multipleHashes": false,
+    "signatureChecks": [
+      {
+        "order": 1,
+        "signatureId": "uuid",
+        "signerRole": "requester",
+        "signerUsername": "jdoe",
+        "documentHash": "0x...",
+        "verificationLink": "http://localhost:3000/verify/0x...",
+        "matchesCurrent": true,
+        "isLatest": false,
+        "contentEditedAfterThisSign": false,
+        "statusLabel": "Matches current content"
+      }
+    ],
+    "editPoints": [],
+    "message": "Current notesheet content matches the document hash used for the latest signature.",
+    "note": null
+  },
+  "bondchain": {
+    "signatureHash": "0x...",
+    "chain": [],
+    "chainStatus": "VERIFIED",
+    "brokenAt": null
+  }
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `valid` | `true` when current content hash equals the **latest** signature's `document_hash` and matches `notesheets.document_content_hash` when set. Earlier signatures may have used older hashes without failing validity. |
+| `mismatchSeverity` | `critical` — approved document and current hash ≠ latest signed hash. `info` — in-workflow mismatch or stored-hash drift while not approved. `null` — no severity (valid or informational only). |
+| `signatureChecks` | Per-signer breakdown: whether each signed hash still matches current content, plus `verificationLink` when stored. |
+| `editPoints` | Human-readable messages when content changed between consecutive signatures (different `document_hash` per row). |
+| `note` | Extra UI copy for mismatches; see rules below. |
+| `bondchain` | BondChain `GET /verify/:signatureHash` result for on-chain chain status (`VERIFIED` / `BROKEN`), or `null` if BondChain is unreachable. |
+
+Optional query: `?signatureHash=0x...` to verify a specific signature on BondChain instead of defaulting to the latest.
+
+### Integrity messaging rules (DMS UI)
+
+The notesheet detail page runs **Check chain** and applies these rules:
+
+| Condition | UI treatment |
+|---|---|
+| `valid === true` | Green / neutral success; no workflow warning note even if earlier signatures used different content hashes. |
+| `valid === false` and `status !== 'approved'` | Amber warning; show `note` only in this case (in-workflow hash mismatch). |
+| `valid === false` and `status === 'approved'` | Red critical; `note` explains post-approval tampering. |
+
+**In-workflow note** (shown only when **not** approved **and** `valid === false`):
+
+> While this document is still in workflow (not yet approved), edits between signatures are normal. A mismatch only becomes critical after the approver has approved — then any change to approved content is a serious integrity issue. See the per-signature breakdown below for when content changed.
+
+This note is **not** shown when content is valid but earlier signers used superseded hashes (normal workflow edits before re-signing).
+
+**Approved mismatch note** (shown when approved and `valid === false`):
+
+> This is a serious integrity issue. The approved document appears to have been changed after the approver signed…
+
+### Verify on BondChain links (DMS UI)
+
+Each callback's `verificationLink` is persisted on `document_bondchain_signatures.verification_link`. The notesheet detail page shows a link for **every** signature that has one:
+
+- Earlier signatures: **Verify on BondChain**
+- Latest signature: **View full chain on BondChain**
+
+The same links appear in the **Per-signature content check** block after **Check chain** (`signatureChecks[].verificationLink`).
+
+Implementation: `lib/notesheet-bondchain-verify.js`, `app/api/documents/notesheets/[id]/bondchain/verify/route.js`, notesheet detail BondChain card in `app/documents/notesheets/[id]/page.jsx`.
+
+## Security Notes
+
+- Compute `documentHash` server-side from canonical document bytes or canonical JSON.
+- Validate callback results against an active request in your app.
+- Treat `signatureHash` as the public verification ID.
+- Use HTTPS callback URLs outside local development.
+- Keep BondChain backend credentials server-side only.
