@@ -127,7 +127,7 @@ The cookie is:
 
 - `httpOnly`
 - `sameSite: lax`
-- 30 minute expiry
+- 15 minute expiry
 - `secure` only in production
 
 ### Verify Current Session

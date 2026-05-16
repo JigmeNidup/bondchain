@@ -9,16 +9,17 @@ export type BondChainSession = {
 };
 
 const cookieName = "bondchain_session";
+const sessionMaxAgeMs = 15 * 60 * 1000;
 
 export const setSessionCookie = (res: Response, session: BondChainSession) => {
   const config = getConfig();
-  const token = jwt.sign(session, config.sessionSecret, { expiresIn: "30m" });
+  const token = jwt.sign(session, config.sessionSecret, { expiresIn: "15m" });
 
   res.cookie(cookieName, token, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
-    maxAge: 30 * 60 * 1000,
+    maxAge: sessionMaxAgeMs,
   });
 };
 
