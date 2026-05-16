@@ -2,22 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { QRCodeSVG } from "qrcode.react";
 import {
   ArrowPathIcon,
   CheckCircleIcon,
   DocumentArrowUpIcon,
+  DocumentIcon,
+  ExclamationTriangleIcon,
   FingerPrintIcon,
   PaperAirplaneIcon,
-  PencilSquareIcon,
 } from "@heroicons/react/24/outline";
+import { NdiModal } from "~~/components/NdiModal";
 import { bondchainFetch } from "~~/utils/bondchainApi";
-
-type ProofRequest = {
-  proofRequestThreadId: string;
-  proofRequestURL: string;
-  deepLinkURL: string;
-};
 
 type SessionStatus = {
   status?: "PENDING" | "VERIFIED" | "FAILED";
@@ -47,7 +42,7 @@ type PeerRequest = {
 };
 
 const UserToUserPage = () => {
-  const [proof, setProof] = useState<ProofRequest | null>(null);
+  const [isNdiModalOpen, setIsNdiModalOpen] = useState(false);
   const [session, setSession] = useState<SessionStatus | null>(null);
   const [document, setDocument] = useState<UploadedDocument | null>(null);
   const [signature, setSignature] = useState<SignatureResult | null>(null);
@@ -66,37 +61,17 @@ const UserToUserPage = () => {
       .catch(() => undefined);
   }, []);
 
-  useEffect(() => {
-    if (!proof || session?.status === "VERIFIED") return;
-
-    const timer = window.setInterval(async () => {
-      try {
-        const nextStatus = await bondchainFetch<SessionStatus>(`/auth/ndi/status/${proof.proofRequestThreadId}`);
-        setSession(nextStatus);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Unable to read NDI status");
-      }
-    }, 2500);
-
-    return () => window.clearInterval(timer);
-  }, [proof, session?.status]);
-
-  const startLogin = async () => {
-    setError("");
-    setLoading(true);
-    try {
-      setProof(await bondchainFetch<ProofRequest>("/auth/ndi/initiate", { method: "POST" }));
-      setSession({ status: "PENDING" });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to start NDI login");
-    } finally {
-      setLoading(false);
-    }
+  const handleNdiSuccess = (did: string) => {
+    setSession({ status: "VERIFIED", didKey: did });
   };
 
-  const uploadDocument = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
+  const uploadDocument = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const form = new FormData();
+    form.append("file", file);
+
     setError("");
     setLoading(true);
     try {
@@ -132,7 +107,7 @@ const UserToUserPage = () => {
     }
   };
 
-  const sendRequest = async (event: React.FormEvent<HTMLFormElement>) => {
+  const sendRequest = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!document || !signature) return;
     setError("");
@@ -157,176 +132,247 @@ const UserToUserPage = () => {
   };
 
   return (
-    <main className="mx-auto grid min-h-dvh w-full max-w-6xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
-      <section className="rounded-lg border border-base-300 bg-base-100 p-6 shadow-sm">
-        <p className="m-0 text-sm font-semibold uppercase text-primary">User signing</p>
-        <h1 className="mt-2 text-3xl font-semibold leading-tight">Send a PDF to another NDI user for signing</h1>
+    <main className="mx-auto grid min-h-[calc(100dvh-80px)] w-full max-w-7xl gap-12 px-4 py-12 sm:px-6 lg:grid-cols-[400px_1fr] lg:px-8">
+      {/* Sidebar Guidance */}
+      <section className="flex flex-col gap-10">
+        <div>
+          <div className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest text-secondary bg-secondary/5 border border-secondary/10 mb-6">
+            Institutional Signing
+          </div>
+          <h1 className="text-3xl font-black text-base-content leading-tight">
+            Peer-to-Peer <br />
+            Execution
+          </h1>
+          <p className="mt-4 text-base-content/60 leading-relaxed">
+            Invite another Bhutan NDI identity to sign a document. All actions are identity-gated and auditable.
+          </p>
+        </div>
 
-        <div className="mt-6 grid gap-3">
+        <div className="flex flex-col gap-6 relative">
+          <div className="absolute left-[15px] top-4 bottom-4 w-0.5 bg-base-300 -z-10" />
           {[
-            ["NDI login", session?.status === "VERIFIED"],
-            ["Upload PDF", !!document],
-            ["Sign first", !!signature],
-            ["Send request", !!peerRequest],
-          ].map(([label, done], index) => (
-            <div key={String(label)} className="flex items-center gap-3 rounded-lg border border-base-300 p-4">
+            { step: 1, title: "Identity", done: session?.status === "VERIFIED", icon: FingerPrintIcon },
+            { step: 2, title: "Document", done: !!document, icon: DocumentIcon },
+            { step: 3, title: "Origin", done: !!signature, icon: CheckCircleIcon },
+            { step: 4, title: "Dispatch", done: !!peerRequest, icon: PaperAirplaneIcon },
+          ].map(item => (
+            <div
+              key={item.step}
+              className={`flex gap-6 items-start transition-all duration-500 ${item.done ? "opacity-100" : "opacity-40"}`}
+            >
               <span
-                className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
-                  done ? "bg-success text-success-content" : "bg-secondary"
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                  item.done
+                    ? "bg-secondary border-secondary text-secondary-content"
+                    : "bg-base-100 border-base-300 text-base-content/40"
                 }`}
               >
-                {done ? <CheckCircleIcon className="h-4 w-4" /> : index + 1}
+                {item.done ? (
+                  <CheckCircleIcon className="h-5 w-5" />
+                ) : (
+                  <span className="text-xs font-bold">{item.step}</span>
+                )}
               </span>
-              <span className="font-medium">{label}</span>
+              <div>
+                <h3 className={`text-base font-bold m-0 ${item.done ? "text-base-content" : "text-base-content/40"}`}>
+                  {item.title}
+                </h3>
+              </div>
             </div>
           ))}
         </div>
-
-        {peerRequest && (
-          <div className="mt-6 rounded-lg border border-success/40 bg-success/10 p-4">
-            <p className="m-0 font-semibold">Signing request sent</p>
-            <Link className="link mt-2 block break-all text-sm" href={peerRequest.signingLink}>
-              {peerRequest.signingLink}
-            </Link>
-          </div>
-        )}
       </section>
 
-      <section className="rounded-lg border border-base-300 bg-base-100 p-6 shadow-sm">
-        <div className="flex items-center justify-between gap-4">
-          <h2 className="m-0 text-xl font-semibold">Create request</h2>
-          <FingerPrintIcon className="h-6 w-6 text-primary" />
-        </div>
-
-        <div className="mt-6 grid gap-5">
-          {session?.status !== "VERIFIED" && (
-            <div className="rounded-lg border border-base-300 p-4">
-              {!proof && (
-                <button className="btn btn-primary min-h-11 rounded-lg" onClick={startLogin} disabled={loading}>
-                  {loading && <span className="loading loading-spinner loading-sm" />}
-                  Start NDI login
-                </button>
-              )}
-
-              {proof && (
-                <div className="grid gap-4 md:grid-cols-[220px_1fr]">
-                  <div className="flex aspect-square items-center justify-center rounded-lg border border-base-300 bg-white p-4">
-                    <QRCodeSVG value={proof.proofRequestURL} size={180} />
-                  </div>
-                  <div className="flex flex-col justify-between gap-4">
-                    <div className="rounded-lg bg-base-200 p-4">
-                      <p className="m-0 text-sm font-medium">NDI status</p>
-                      <p className="m-0 mt-1 text-lg font-semibold">{session?.status || "PENDING"}</p>
-                    </div>
-                    <a className="btn btn-outline min-h-11 rounded-lg" href={proof.deepLinkURL}>
-                      Open NDI Wallet
-                    </a>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {session?.status === "VERIFIED" && (
-            <form className="rounded-lg border border-base-300 p-4" onSubmit={uploadDocument}>
-              <label className="form-control">
-                <span className="label-text font-medium">PDF document</span>
-                <input
-                  className="file-input file-input-bordered mt-2 w-full"
-                  type="file"
-                  name="file"
-                  accept="application/pdf"
-                  required
-                />
-              </label>
-              <button className="btn btn-primary mt-4 min-h-11 rounded-lg" disabled={loading}>
-                {loading ? (
-                  <ArrowPathIcon className="h-4 w-4 animate-spin" />
-                ) : (
-                  <DocumentArrowUpIcon className="h-4 w-4" />
-                )}
-                Upload PDF
-              </button>
-            </form>
-          )}
-
-          {document && (
-            <div className="rounded-lg border border-base-300 p-4">
-              <p className="m-0 text-sm text-base-content/65">Document hash</p>
-              <p className="m-0 mt-2 break-all font-mono text-sm">{document.docHash}</p>
-              <iframe
-                className="mt-4 h-80 w-full rounded-lg border border-base-300"
-                src={document.ipfsGatewayUrl}
-                title="PDF preview"
+      {/* Action Center */}
+      <section className="card p-2 shadow-xl bg-base-200/50">
+        <div className="card h-full flex flex-col p-8 md:p-12 overflow-hidden bg-base-100 border-none">
+          <div className="flex items-center justify-between border-b border-base-300 pb-8 mb-8">
+            <h2 className="text-xl font-black text-base-content">Workflow Execution</h2>
+            <div className="flex items-center gap-2">
+              <span
+                className={`h-2 w-2 rounded-full ${session?.status === "VERIFIED" ? "bg-secondary animate-pulse" : "bg-base-300"}`}
               />
-              {!signature && (
+              <span className="text-xs font-bold uppercase tracking-widest text-base-content/40">
+                {session?.status === "VERIFIED" ? "Identity Active" : "Authentication Required"}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex-1 flex flex-col">
+            {session?.status !== "VERIFIED" && (
+              <div className="flex-1 flex flex-col items-center justify-center text-center animate-in fade-in duration-700">
+                <div className="h-20 w-20 rounded-3xl bg-secondary/5 flex items-center justify-center text-secondary mb-8 shadow-inner border border-secondary/10">
+                  <FingerPrintIcon className="h-10 w-10" />
+                </div>
+                <h3 className="text-2xl font-black text-base-content">Author Authentication</h3>
+                <p className="text-base-content/60 mt-4 max-w-sm leading-relaxed">
+                  You must be verified to initiate civic signing requests.
+                </p>
                 <button
-                  className="btn btn-primary mt-4 min-h-11 rounded-lg"
+                  className="btn btn-secondary mt-10 h-14 w-full max-w-sm text-lg shadow-lg"
+                  onClick={() => setIsNdiModalOpen(true)}
+                  disabled={loading}
+                >
+                  Sign in with NDI
+                </button>
+              </div>
+            )}
+
+            {session?.status === "VERIFIED" && !document && (
+              <div className="flex-1 flex flex-col animate-in fade-in duration-700">
+                <h2 className="text-2xl font-black text-base-content mb-8">1. Upload Document</h2>
+                <div
+                  className="flex-1 border-2 border-dashed border-base-300 rounded-[2.5rem] bg-base-200/50 flex flex-col items-center justify-center p-12 hover:border-secondary/40 hover:bg-base-300/30 transition-all cursor-pointer group"
+                  onClick={() => window.document.getElementById("file-upload")?.click()}
+                >
+                  <div className="h-16 w-16 rounded-3xl bg-base-100 text-base-content/20 flex items-center justify-center mb-6 shadow-sm group-hover:text-secondary transition-colors">
+                    <DocumentArrowUpIcon className="h-8 w-8" />
+                  </div>
+                  <p className="text-lg font-bold text-base-content m-0">Select PDF Notesheet</p>
+                  <p className="text-sm text-base-content/40 mt-2">Maximum file size 10MB</p>
+                  <input
+                    id="file-upload"
+                    type="file"
+                    className="hidden"
+                    accept="application/pdf"
+                    onChange={uploadDocument}
+                  />
+                </div>
+              </div>
+            )}
+
+            {document && !signature && (
+              <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <h2 className="text-2xl font-black text-base-content mb-6">2. Apply Origin Signature</h2>
+
+                <div className="card p-6 border-base-300 bg-base-200/50 mb-8">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-base-content/40 mb-2">
+                    Content Hash
+                  </p>
+                  <p className="font-mono text-sm text-secondary font-bold m-0 break-all">{document.docHash}</p>
+                </div>
+
+                <div className="flex-1 relative rounded-2xl overflow-hidden border border-base-300 shadow-inner bg-slate-900">
+                  <iframe className="w-full h-full" src={document.ipfsGatewayUrl} />
+                </div>
+
+                <button
+                  className="btn btn-secondary mt-8 h-14 text-lg shadow-xl shadow-secondary/20"
                   onClick={signOriginDocument}
                   disabled={loading}
                 >
                   {loading ? (
-                    <ArrowPathIcon className="h-4 w-4 animate-spin" />
+                    <ArrowPathIcon className="h-6 w-6 animate-spin mr-2" />
                   ) : (
-                    <PencilSquareIcon className="h-4 w-4" />
+                    <FingerPrintIcon className="h-6 w-6 mr-2" />
                   )}
-                  Sign as origin user
+                  Sign Document as Origin
                 </button>
-              )}
-            </div>
-          )}
+              </div>
+            )}
 
-          {signature && !peerRequest && (
-            <form className="grid gap-4 rounded-lg border border-base-300 p-4" onSubmit={sendRequest}>
-              <div className="rounded-lg bg-success/10 p-3">
-                <p className="m-0 text-sm font-semibold">Origin signature recorded</p>
-                <Link className="link mt-1 block break-all text-sm" href={signature.verificationLink}>
-                  {signature.verificationLink}
+            {signature && !peerRequest && (
+              <form
+                className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-700"
+                onSubmit={sendRequest}
+              >
+                <h2 className="text-2xl font-black text-base-content mb-2">3. Define Recipient</h2>
+                <p className="text-base-content/40 mb-8 leading-relaxed">
+                  The document will be identity-locked to these specific credentials.
+                </p>
+
+                <div className="grid gap-6">
+                  <div className="space-y-4">
+                    <label className="text-xs font-black uppercase tracking-widest text-base-content/40 px-1">
+                      Your Identity (Requester)
+                    </label>
+                    <input
+                      className="w-full h-14 px-6 rounded-2xl bg-base-200/50 border-2 border-base-300 focus:border-secondary focus:bg-base-100 outline-none transition-all font-bold text-base-content"
+                      type="email"
+                      value={requesterEmail}
+                      onChange={e => setRequesterEmail(e.target.value)}
+                      placeholder="Your official email"
+                      required
+                    />
+                  </div>
+
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <div className="space-y-4">
+                      <label className="text-xs font-black uppercase tracking-widest text-base-content/40 px-1">
+                        Target CID
+                      </label>
+                      <input
+                        className="w-full h-14 px-6 rounded-2xl bg-base-200/50 border-2 border-base-300 focus:border-secondary focus:bg-base-100 outline-none transition-all font-bold text-base-content"
+                        value={targetCid}
+                        onChange={e => setTargetCid(e.target.value)}
+                        placeholder="Recipient's CID"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <label className="text-xs font-black uppercase tracking-widest text-base-content/40 px-1">
+                        Target Email
+                      </label>
+                      <input
+                        className="w-full h-14 px-6 rounded-2xl bg-base-200/50 border-2 border-base-300 focus:border-secondary focus:bg-base-100 outline-none transition-all font-bold text-base-content"
+                        type="email"
+                        value={targetEmail}
+                        onChange={e => setTargetEmail(e.target.value)}
+                        placeholder="Recipient's NDI email"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-auto pt-12">
+                  <button
+                    className="btn btn-secondary w-full h-14 text-lg shadow-xl shadow-secondary/20"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <ArrowPathIcon className="h-6 w-6 animate-spin mr-2" />
+                    ) : (
+                      <PaperAirplaneIcon className="h-6 w-6 mr-2" />
+                    )}
+                    Dispatch Peer Request
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {peerRequest && (
+              <div className="flex-1 flex flex-col items-center justify-center text-center animate-in zoom-in duration-500">
+                <div className="h-20 w-20 rounded-full bg-secondary/5 flex items-center justify-center text-secondary mb-8 shadow-inner border border-secondary/10">
+                  <CheckCircleIcon className="h-10 w-10" />
+                </div>
+                <h3 className="text-3xl font-black text-base-content">Request Dispatched</h3>
+                <p className="text-base-content/60 mt-4 max-w-sm leading-relaxed mb-10">
+                  The document has been securely routed. The recipient can now verify and sign using the link below.
+                </p>
+                <div className="card p-8 bg-base-200/50 border-base-300 w-full mb-10 text-left">
+                  <p className="text-xs font-black uppercase tracking-widest text-base-content/40 mb-3">
+                    Signing Token
+                  </p>
+                  <p className="font-mono text-sm text-secondary font-bold m-0 break-all">{peerRequest.token}</p>
+                </div>
+                <Link href="/history" className="btn btn-secondary h-14 w-full text-lg shadow-xl shadow-secondary/20">
+                  Monitor Fulfillment
                 </Link>
               </div>
-              <label className="form-control">
-                <span className="label-text font-medium">Your email</span>
-                <input
-                  className="input input-bordered mt-2"
-                  type="email"
-                  value={requesterEmail}
-                  onChange={event => setRequesterEmail(event.target.value)}
-                  required
-                />
-              </label>
-              <label className="form-control">
-                <span className="label-text font-medium">Target signer CID</span>
-                <input
-                  className="input input-bordered mt-2"
-                  value={targetCid}
-                  onChange={event => setTargetCid(event.target.value)}
-                  required
-                />
-              </label>
-              <label className="form-control">
-                <span className="label-text font-medium">Target signer email</span>
-                <input
-                  className="input input-bordered mt-2"
-                  type="email"
-                  value={targetEmail}
-                  onChange={event => setTargetEmail(event.target.value)}
-                  required
-                />
-              </label>
-              <button className="btn btn-primary min-h-11 rounded-lg" disabled={loading}>
-                {loading ? (
-                  <ArrowPathIcon className="h-4 w-4 animate-spin" />
-                ) : (
-                  <PaperAirplaneIcon className="h-4 w-4" />
-                )}
-                Submit signing request
-              </button>
-            </form>
-          )}
+            )}
 
-          {error && <div className="alert alert-error rounded-lg text-sm">{error}</div>}
+            {error && (
+              <div className="mt-8 rounded-2xl bg-error/5 border border-error/10 p-4 flex items-center gap-3 text-error font-bold animate-in shake duration-500">
+                <ExclamationTriangleIcon className="h-5 w-5 shrink-0" />
+                <span className="text-sm">{error}</span>
+              </div>
+            )}
+          </div>
         </div>
       </section>
+
+      <NdiModal isOpen={isNdiModalOpen} onClose={() => setIsNdiModalOpen(false)} onSuccess={handleNdiSuccess} />
     </main>
   );
 };

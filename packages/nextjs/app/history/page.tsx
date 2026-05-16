@@ -2,21 +2,19 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { QRCodeSVG } from "qrcode.react";
 import {
+  ArrowPathIcon,
+  ArrowTopRightOnSquareIcon,
   ClockIcon,
   DocumentTextIcon,
+  ExclamationTriangleIcon,
   FingerPrintIcon,
   InboxArrowDownIcon,
   PaperAirplaneIcon,
+  ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
+import { NdiModal } from "~~/components/NdiModal";
 import { bondchainFetch } from "~~/utils/bondchainApi";
-
-type ProofRequest = {
-  proofRequestThreadId: string;
-  proofRequestURL: string;
-  deepLinkURL: string;
-};
 
 type HistoryDocument = {
   id: string;
@@ -59,12 +57,22 @@ type HistoryResponse = {
 
 type HistoryTab = "all" | "uploaded" | "sent" | "received" | "signed";
 
-const formatDate = (value: string) => new Date(value).toLocaleString();
-const shortHash = (value: string) => `${value.slice(0, 10)}...${value.slice(-8)}`;
+const formatDate = (value: string) => {
+  const date = new Date(value);
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+};
+
+const shortHash = (value: string) => `${value.slice(0, 12)}...${value.slice(-10)}`;
 
 const HistoryPage = () => {
   const [history, setHistory] = useState<HistoryResponse | null>(null);
-  const [proof, setProof] = useState<ProofRequest | null>(null);
+  const [isNdiModalOpen, setIsNdiModalOpen] = useState(false);
   const [tab, setTab] = useState<HistoryTab>("all");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -85,31 +93,8 @@ const HistoryPage = () => {
     loadHistory();
   }, []);
 
-  useEffect(() => {
-    if (!proof || history) return;
-
-    const timer = window.setInterval(async () => {
-      try {
-        const status = await bondchainFetch<{ status: string }>(`/auth/ndi/status/${proof.proofRequestThreadId}`);
-        if (status.status === "VERIFIED") await loadHistory();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Unable to verify NDI session");
-      }
-    }, 2500);
-
-    return () => window.clearInterval(timer);
-  }, [proof, history]);
-
-  const startLogin = async () => {
-    setError("");
-    setLoading(true);
-    try {
-      setProof(await bondchainFetch<ProofRequest>("/auth/ndi/initiate", { method: "POST" }));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to start NDI login");
-    } finally {
-      setLoading(false);
-    }
+  const handleNdiSuccess = () => {
+    loadHistory();
   };
 
   const empty = useMemo(() => {
@@ -123,169 +108,251 @@ const HistoryPage = () => {
   }, [history]);
 
   return (
-    <main className="mx-auto min-h-dvh w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-      <section className="rounded-lg border border-base-300 bg-base-100 p-6 shadow-sm">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <p className="m-0 text-sm font-semibold uppercase text-primary">Private history</p>
-            <h1 className="mt-2 text-3xl font-semibold leading-tight">Track document signing activity</h1>
+    <main className="mx-auto min-h-[calc(100dvh-80px)] w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <section className="flex flex-col gap-12">
+        {/* Page Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-base-300 pb-12">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary bg-primary/5 border border-primary/10 mb-6">
+              Immutable Records
+            </div>
+            <h1 className="text-3xl font-black text-base-content leading-tight">Digital Archive</h1>
+            <p className="mt-4 text-lg text-base-content/60 leading-relaxed">
+              Explore your complete audit trail of civic actions, signatures, and document provenance.
+            </p>
           </div>
-          <ClockIcon className="h-8 w-8 text-primary" />
+          <div className="flex gap-4">
+            <button
+              className="btn btn-primary h-11 px-6 shadow-lg shadow-primary/20 text-sm"
+              onClick={() => setIsNdiModalOpen(true)}
+              disabled={loading}
+            >
+              {loading ? (
+                <ArrowPathIcon className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <FingerPrintIcon className="h-4 w-4 mr-2" />
+              )}
+              Refresh Audit
+            </button>
+          </div>
         </div>
 
         {!history && (
-          <div className="mt-6 rounded-lg border border-base-300 p-4">
-            {!proof && (
-              <button className="btn btn-primary min-h-11 rounded-lg" onClick={startLogin} disabled={loading}>
-                {loading && <span className="loading loading-spinner loading-sm" />}
-                Login with NDI
-              </button>
-            )}
-            {proof && (
-              <div className="grid gap-4 md:grid-cols-[220px_1fr]">
-                <div className="flex aspect-square items-center justify-center rounded-lg border border-base-300 bg-white p-4">
-                  <QRCodeSVG value={proof.proofRequestURL} size={180} />
-                </div>
-                <div className="flex flex-col justify-between gap-4">
-                  <p className="m-0 rounded-lg bg-base-200 p-4 font-semibold">Waiting for NDI verification</p>
-                  <a className="btn btn-outline min-h-11 rounded-lg" href={proof.deepLinkURL}>
-                    Open NDI Wallet
-                  </a>
-                </div>
-              </div>
-            )}
+          <div className="py-24 card bg-base-200/50 border-dashed border-2 flex flex-col items-center text-center">
+            <div className="h-20 w-20 rounded-3xl bg-base-100 shadow-sm flex items-center justify-center text-base-content/20 mb-8 border border-base-300">
+              <ShieldCheckIcon className="h-10 w-10" />
+            </div>
+            <h3 className="text-2xl font-black text-base-content">Encrypted Session Required</h3>
+            <p className="text-base-content/60 mt-4 max-w-sm leading-relaxed">
+              Your history is protected by Bhutan NDI sovereign keys. Please authenticate to decrypt your audit logs.
+            </p>
+            <button className="btn btn-primary mt-10 h-14 px-12 text-lg" onClick={() => setIsNdiModalOpen(true)}>
+              Sign in with NDI
+            </button>
           </div>
         )}
 
         {history && (
-          <>
-            <div className="tabs tabs-box mt-6">
+          <div className="animate-in fade-in duration-700">
+            {/* Filter Tabs */}
+            <div className="flex flex-wrap gap-2 p-1.5 bg-base-300/50 rounded-[1.25rem] w-fit mb-10">
               {[
-                ["all", "All"],
-                ["uploaded", "Uploaded"],
-                ["sent", "Sent"],
-                ["received", "Received"],
-                ["signed", "Signed"],
-              ].map(([value, label]) => (
+                ["all", "All Activity", ClockIcon],
+                ["uploaded", "Files", DocumentTextIcon],
+                ["sent", "Outbound", PaperAirplaneIcon],
+                ["received", "Inbound", InboxArrowDownIcon],
+                ["signed", "Executed", FingerPrintIcon],
+              ].map(([value, label, Icon]) => (
                 <button
-                  key={value}
-                  className={`tab ${tab === value ? "tab-active" : ""}`}
+                  key={value as string}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
+                    tab === value
+                      ? "bg-base-100 text-primary shadow-sm scale-105"
+                      : "text-base-content/40 hover:text-base-content hover:bg-base-300/50"
+                  }`}
                   onClick={() => setTab(value as HistoryTab)}
-                  type="button"
                 >
-                  {label}
+                  <Icon className="h-4 w-4" />
+                  {label as string}
                 </button>
               ))}
             </div>
 
-            {empty && (
-              <div className="mt-6 rounded-lg border border-base-300 p-6 text-center">
-                <p className="m-0 font-semibold">No signing history yet</p>
-                <Link className="btn btn-primary mt-4 min-h-11 rounded-lg" href="/user-to-user">
-                  Start a user signing request
+            {empty ? (
+              <div className="py-20 text-center flex flex-col items-center">
+                <div className="h-16 w-16 rounded-full bg-base-200/50 flex items-center justify-center text-base-content/20 mb-6 border border-base-300">
+                  <DocumentTextIcon className="h-8 w-8" />
+                </div>
+                <h3 className="text-xl font-black text-base-content">No Records Found</h3>
+                <p className="text-base-content/60 mt-2">You haven&apos;t initiated any signing workflows yet.</p>
+                <Link href="/user-to-user" className="btn btn-primary mt-8 h-14 px-8">
+                  Create First Request
                 </Link>
               </div>
+            ) : (
+              <div className="grid gap-6">
+                {(tab === "all" || tab === "received") &&
+                  history.receivedRequests.map(request => (
+                    <HistoryCard
+                      key={`received-${request.token}`}
+                      icon={<InboxArrowDownIcon className="h-6 w-6" />}
+                      type="Received Request"
+                      title={request.document?.fileName || "Incoming Signature Request"}
+                      status={request.status}
+                      date={request.updatedAt}
+                      docHash={request.docHash}
+                      actionHref={request.verificationLink || request.signingLink}
+                      actionLabel={request.verificationLink ? "View Proof" : "Apply Signature"}
+                      color="secondary"
+                    />
+                  ))}
+
+                {(tab === "all" || tab === "sent") &&
+                  history.sentRequests.map(request => (
+                    <HistoryCard
+                      key={`sent-${request.token}`}
+                      icon={<PaperAirplaneIcon className="h-6 w-6" />}
+                      type="Sent Request"
+                      title={request.document?.fileName || "Outbound Execution"}
+                      status={request.status}
+                      date={request.updatedAt}
+                      docHash={request.docHash}
+                      actionHref={request.verificationLink || request.signingLink}
+                      actionLabel={request.verificationLink ? "View Proof" : "Manage"}
+                      color="primary"
+                    />
+                  ))}
+
+                {(tab === "all" || tab === "uploaded") &&
+                  history.documents.map(document => (
+                    <HistoryCard
+                      key={`document-${document.id}`}
+                      icon={<DocumentTextIcon className="h-6 w-6" />}
+                      type="File Upload"
+                      title={document.fileName || "Stored Document"}
+                      status={`${document.signatureCount} signature${document.signatureCount === 1 ? "" : "s"}`}
+                      date={document.createdAt}
+                      docHash={document.docHash}
+                      actionHref={document.ipfsGatewayUrl}
+                      actionLabel="Preview PDF"
+                      color="slate"
+                    />
+                  ))}
+
+                {(tab === "all" || tab === "signed") &&
+                  history.signatures.map(signature => (
+                    <HistoryCard
+                      key={`signature-${signature.signatureHash}`}
+                      icon={<FingerPrintIcon className="h-6 w-6" />}
+                      type="Signature Execution"
+                      title="On-Chain Audit Record"
+                      status="VERIFIED"
+                      date={signature.createdAt}
+                      docHash={signature.docHash}
+                      actionHref={`/verify/${signature.signatureHash}`}
+                      actionLabel="Provenance"
+                      color="primary"
+                    />
+                  ))}
+              </div>
             )}
-
-            <div className="mt-6 grid gap-4">
-              {(tab === "all" || tab === "received") &&
-                history.receivedRequests.map(request => (
-                  <HistoryCard
-                    key={`received-${request.token}`}
-                    icon={<InboxArrowDownIcon className="h-5 w-5" />}
-                    title={request.document?.fileName || "Received signing request"}
-                    status={request.status}
-                    date={request.updatedAt}
-                    docHash={request.docHash}
-                    actionHref={request.verificationLink || request.signingLink}
-                    actionLabel={request.verificationLink ? "Verify" : "Sign"}
-                  />
-                ))}
-
-              {(tab === "all" || tab === "sent") &&
-                history.sentRequests.map(request => (
-                  <HistoryCard
-                    key={`sent-${request.token}`}
-                    icon={<PaperAirplaneIcon className="h-5 w-5" />}
-                    title={request.document?.fileName || "Sent signing request"}
-                    status={request.status}
-                    date={request.updatedAt}
-                    docHash={request.docHash}
-                    actionHref={request.verificationLink || request.signingLink}
-                    actionLabel={request.verificationLink ? "Verify" : "Open request"}
-                  />
-                ))}
-
-              {(tab === "all" || tab === "uploaded") &&
-                history.documents.map(document => (
-                  <HistoryCard
-                    key={`document-${document.id}`}
-                    icon={<DocumentTextIcon className="h-5 w-5" />}
-                    title={document.fileName || "Uploaded document"}
-                    status={`${document.signatureCount} signature${document.signatureCount === 1 ? "" : "s"}`}
-                    date={document.createdAt}
-                    docHash={document.docHash}
-                    actionHref={document.ipfsGatewayUrl}
-                    actionLabel="Preview"
-                  />
-                ))}
-
-              {(tab === "all" || tab === "signed") &&
-                history.signatures.map(signature => (
-                  <HistoryCard
-                    key={`signature-${signature.signatureHash}`}
-                    icon={<FingerPrintIcon className="h-5 w-5" />}
-                    title="Signature recorded"
-                    status="SIGNED"
-                    date={signature.createdAt}
-                    docHash={signature.docHash}
-                    actionHref={`/verify/${signature.signatureHash}`}
-                    actionLabel="Verify"
-                  />
-                ))}
-            </div>
-          </>
+          </div>
         )}
 
-        {error && <div className="alert alert-error mt-6 rounded-lg text-sm">{error}</div>}
+        {error && (
+          <div className="mt-8 rounded-2xl bg-error/5 border border-error/10 p-4 flex items-center gap-3 text-error font-bold">
+            <ExclamationTriangleIcon className="h-5 w-5 shrink-0" />
+            <span className="text-sm">{error}</span>
+          </div>
+        )}
       </section>
+
+      <NdiModal
+        isOpen={isNdiModalOpen}
+        onClose={() => setIsNdiModalOpen(false)}
+        onSuccess={handleNdiSuccess}
+        title="Refresh Archive"
+      />
     </main>
   );
 };
 
 const HistoryCard = ({
   icon,
+  type,
   title,
   status,
   date,
   docHash,
   actionHref,
   actionLabel,
+  color,
 }: {
   icon: React.ReactNode;
+  type: string;
   title: string;
   status: string;
   date: string;
   docHash: string;
   actionHref: string;
   actionLabel: string;
+  color: "primary" | "secondary" | "slate";
 }) => (
-  <div className="rounded-lg border border-base-300 p-4">
-    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <div className="flex min-w-0 items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary">{icon}</span>
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="m-0 font-semibold">{title}</p>
-            <span className="badge badge-outline">{status}</span>
+  <div className="group card p-6 md:p-8 hover:bg-base-200/50 transition-all border-base-300">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+      <div className="flex flex-1 min-w-0 gap-6">
+        <div
+          className={`h-13 w-13 shrink-0 rounded-2xl flex items-center justify-center shadow-inner transition-colors ${
+            color === "primary"
+              ? "bg-primary/5 text-primary group-hover:bg-primary group-hover:text-primary-content"
+              : color === "secondary"
+                ? "bg-secondary/5 text-secondary group-hover:bg-secondary group-hover:text-secondary-content"
+                : "bg-base-300/50 text-base-content/40 group-hover:bg-base-content group-hover:text-base-100"
+          }`}
+        >
+          {icon}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-3 mb-2">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-base-content/40">{type}</span>
+            <span
+              className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest ${
+                status === "VERIFIED" || status === "SIGNED" || status.includes("signature")
+                  ? "bg-success/10 text-success border border-success/20"
+                  : "bg-base-300/50 text-base-content/40 border border-base-300"
+              }`}
+            >
+              {status}
+            </span>
           </div>
-          <p className="m-0 mt-1 text-sm text-base-content/65">{formatDate(date)}</p>
-          <p className="m-0 mt-2 break-all font-mono text-xs">{shortHash(docHash)}</p>
+          <h3 className="text-xl font-black text-base-content mb-2 truncate">{title}</h3>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <div className="flex items-center gap-2 text-xs font-bold text-base-content/40">
+              <ClockIcon className="h-4 w-4" />
+              {formatDate(date)}
+            </div>
+            <div className="flex items-center gap-2 text-xs font-mono text-base-content/20 group-hover:text-base-content/40 transition-colors">
+              <ShieldCheckIcon className="h-4 w-4" />
+              {shortHash(docHash)}
+            </div>
+          </div>
         </div>
       </div>
-      <Link className="btn btn-outline min-h-11 rounded-lg" href={actionHref}>
-        {actionLabel}
-      </Link>
+      <div className="flex items-center gap-4">
+        <Link
+          href={actionHref}
+          className={`btn h-11 px-6 text-xs font-bold rounded-xl shadow-lg transition-all ${
+            color === "primary"
+              ? "btn-primary shadow-primary/20"
+              : color === "secondary"
+                ? "btn-secondary shadow-secondary/20"
+                : "btn-outline border-2"
+          }`}
+        >
+          {actionLabel}
+          <ArrowTopRightOnSquareIcon className="h-3 w-3 ml-1.5" />
+        </Link>
+      </div>
     </div>
   </div>
 );

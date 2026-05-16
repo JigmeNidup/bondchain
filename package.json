@@ -55,7 +55,8 @@
   },
   "devDependencies": {
     "husky": "~9.1.6",
-    "lint-staged": "~13.2.2"
+    "lint-staged": "~13.2.2",
+    "tsx": "^4.21.0"
   },
   "packageManager": "yarn@4.13.0",
   "engines": {

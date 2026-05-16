@@ -1,9 +1,18 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { QRCodeSVG } from "qrcode.react";
-import { CheckCircleIcon, DocumentTextIcon, FingerPrintIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowPathIcon,
+  ArrowRightIcon,
+  CheckCircleIcon,
+  DocumentTextIcon,
+  ExclamationTriangleIcon,
+  FingerPrintIcon,
+  ShieldCheckIcon,
+} from "@heroicons/react/24/outline";
+import { NdiModal } from "~~/components/NdiModal";
 import { bondchainFetch } from "~~/utils/bondchainApi";
 
 type SigningSession = {
@@ -14,17 +23,11 @@ type SigningSession = {
   status: string;
 };
 
-type ProofRequest = {
-  proofRequestThreadId: string;
-  proofRequestURL: string;
-  deepLinkURL: string;
-};
-
 const SignSurface = () => {
   const params = useSearchParams();
   const token = params.get("session") || "";
   const [session, setSession] = useState<SigningSession | null>(null);
-  const [proof, setProof] = useState<ProofRequest | null>(null);
+  const [isNdiModalOpen, setIsNdiModalOpen] = useState(false);
   const [ndiVerified, setNdiVerified] = useState(false);
   const [result, setResult] = useState<{ callbackUrl?: string; verificationLink: string; txHash?: string } | null>(
     null,
@@ -39,31 +42,8 @@ const SignSurface = () => {
       .catch(err => setError(err instanceof Error ? err.message : "Signing session not found"));
   }, [token]);
 
-  useEffect(() => {
-    if (!proof || ndiVerified) return;
-
-    const timer = window.setInterval(async () => {
-      try {
-        const status = await bondchainFetch<{ status: string }>(`/auth/ndi/status/${proof.proofRequestThreadId}`);
-        if (status.status === "VERIFIED") setNdiVerified(true);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Unable to verify NDI session");
-      }
-    }, 2500);
-
-    return () => window.clearInterval(timer);
-  }, [proof, ndiVerified]);
-
-  const startLogin = async () => {
-    setError("");
-    setLoading(true);
-    try {
-      setProof(await bondchainFetch<ProofRequest>("/auth/ndi/initiate", { method: "POST" }));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to start NDI login");
-    } finally {
-      setLoading(false);
-    }
+  const handleNdiSuccess = () => {
+    setNdiVerified(true);
   };
 
   const sign = async () => {
@@ -87,94 +67,189 @@ const SignSurface = () => {
   };
 
   return (
-    <main className="mx-auto grid min-h-dvh w-full max-w-5xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
-      <section className="rounded-lg border border-base-300 bg-base-100 p-6 shadow-sm">
-        <div className="flex items-start gap-4">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-secondary">
-            <DocumentTextIcon className="h-5 w-5" />
-          </span>
-          <div>
-            <p className="m-0 text-sm font-semibold uppercase text-primary">Signing overlay</p>
-            <h1 className="mt-2 text-2xl font-semibold leading-tight">
-              {session?.documentName || "Notesheet document"}
-            </h1>
+    <main className="mx-auto grid min-h-[calc(100dvh-80px)] w-full max-w-7xl gap-12 px-4 py-12 sm:px-6 lg:grid-cols-[400px_1fr] lg:px-8">
+      {/* Sidebar - Context */}
+      <section className="flex flex-col gap-10">
+        <div>
+          <div className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary bg-primary/5 border border-primary/10 mb-6">
+            Official Execution
+          </div>
+          <h1 className="text-3xl font-black text-base-content leading-tight">
+            Authorize <br />
+            Signature
+          </h1>
+          <p className="mt-4 text-base-content/60 leading-relaxed">
+            Review the document details and provide your cryptographic signature using Bhutan NDI.
+          </p>
+        </div>
+
+        <div className="space-y-6">
+          <div className="card p-8 bg-base-100 border-base-300">
+            <div className="flex items-center gap-4 mb-6 pb-6 border-b border-base-300">
+              <div className="h-12 w-12 rounded-xl bg-primary/5 flex items-center justify-center text-primary shadow-inner border border-primary/10">
+                <DocumentTextIcon className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-base-content/40 m-0">
+                  Document Name
+                </p>
+                <h3 className="text-lg font-black text-base-content m-0 truncate max-w-[180px]">
+                  {session?.documentName || "Official Notesheet"}
+                </h3>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-base-content/40 mb-2">
+                  Content Fingerprint
+                </p>
+                <p className="font-mono text-xs break-all text-base-content/60 leading-relaxed m-0">
+                  {session?.documentHash || "Awaiting context..."}
+                </p>
+              </div>
+              <div className="pt-2">
+                <p className="text-[10px] font-black uppercase tracking-widest text-base-content/40 mb-2">
+                  Current Status
+                </p>
+                <div className="flex items-center gap-2">
+                  <span className={`h-2 w-2 rounded-full ${result ? "bg-success" : "bg-warning animate-pulse"}`} />
+                  <span className="text-xs font-bold uppercase tracking-widest text-base-content">
+                    {result ? "EXECUTION COMPLETE" : session?.status || "WAITING FOR SIGNATURE"}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-
-        <div className="mt-6 rounded-lg bg-base-200 p-4">
-          <p className="m-0 text-sm text-base-content/65">Document hash</p>
-          <p className="mt-2 break-all font-mono text-sm">{session?.documentHash || "No session selected"}</p>
-        </div>
-
-        <div className="mt-4 rounded-lg border border-base-300 p-4">
-          <p className="m-0 text-sm text-base-content/65">Status</p>
-          <p className="m-0 mt-1 font-semibold">{result ? "SIGNED" : session?.status || "PENDING"}</p>
-        </div>
       </section>
 
-      <section className="rounded-lg border border-base-300 bg-base-100 p-6 shadow-sm">
-        <div className="flex items-center justify-between">
-          <h2 className="m-0 text-xl font-semibold">Authorization</h2>
-          <FingerPrintIcon className="h-6 w-6 text-primary" />
-        </div>
+      {/* Action Center */}
+      <section className="card p-2 shadow-xl bg-base-200/50">
+        <div className="card h-full flex flex-col p-8 md:p-12 overflow-hidden bg-base-100 border-none">
+          <div className="flex items-center justify-between border-b border-base-300 pb-8 mb-8">
+            <h2 className="text-xl font-black text-base-content">Signing Console</h2>
+            <div className="flex items-center gap-2">
+              <span className={`h-2 w-2 rounded-full ${ndiVerified ? "bg-primary animate-pulse" : "bg-base-300"}`} />
+              <span className="text-xs font-bold uppercase tracking-widest text-base-content/40">
+                {ndiVerified ? "Identity Unlocked" : "Awaiting Verification"}
+              </span>
+            </div>
+          </div>
 
-        <div className="mt-6 flex flex-col gap-4">
-          {!ndiVerified && !proof && (
-            <button className="btn btn-primary min-h-11 rounded-lg" onClick={startLogin} disabled={loading || !session}>
-              Start NDI login
-            </button>
-          )}
-
-          {!ndiVerified && proof && (
-            <div className="grid gap-4 md:grid-cols-[220px_1fr]">
-              <div className="flex aspect-square items-center justify-center rounded-lg border border-base-300 bg-white p-4">
-                <QRCodeSVG value={proof.proofRequestURL} size={180} />
-              </div>
-              <div className="flex flex-col justify-between gap-4">
-                <div className="rounded-lg bg-base-200 p-4">
-                  <p className="m-0 text-sm font-medium">NDI status</p>
-                  <p className="m-0 mt-1 text-lg font-semibold">PENDING</p>
+          <div className="flex-1 flex flex-col justify-center">
+            {!ndiVerified && (
+              <div className="flex flex-col items-center text-center animate-in fade-in duration-700">
+                <div className="h-20 w-20 rounded-3xl bg-primary/5 flex items-center justify-center text-primary mb-8 shadow-inner border border-primary/10">
+                  <FingerPrintIcon className="h-10 w-10" />
                 </div>
-                <a className="btn btn-outline min-h-11 rounded-lg" href={proof.deepLinkURL}>
-                  Open NDI Wallet
-                </a>
+                <h3 className="text-2xl font-black text-base-content">Verification Required</h3>
+                <p className="text-base-content/60 mt-4 max-w-sm leading-relaxed">
+                  Access to the signing keys requires a valid Bhutan NDI session.
+                </p>
+                <button
+                  className="btn btn-primary mt-10 h-14 w-full max-w-sm text-lg shadow-xl shadow-primary/20"
+                  onClick={() => setIsNdiModalOpen(true)}
+                  disabled={loading || !session}
+                >
+                  Authorize Identity
+                </button>
               </div>
-            </div>
-          )}
+            )}
 
-          {ndiVerified && !result && (
-            <button className="btn btn-primary min-h-11 rounded-lg" onClick={sign} disabled={loading || !session}>
-              {loading && <span className="loading loading-spinner loading-sm" />}
-              Sign document
-            </button>
-          )}
-
-          {result && (
-            <div className="rounded-lg border border-success/40 bg-success/10 p-4">
-              <div className="flex items-center gap-2">
-                <CheckCircleIcon className="h-5 w-5 text-success" />
-                <p className="m-0 font-semibold">Signature recorded</p>
+            {ndiVerified && !result && (
+              <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="rounded-[2rem] bg-base-200/50 p-10 border border-base-300 text-center">
+                  <div className="h-20 w-20 rounded-full bg-success/10 flex items-center justify-center text-success mx-auto mb-6">
+                    <ShieldCheckIcon className="h-10 w-10" />
+                  </div>
+                  <h3 className="text-2xl font-black text-base-content">Identity Confirmed</h3>
+                  <p className="text-base-content/60 mt-2 leading-relaxed">
+                    Your sovereign identity has been successfully verified. You are now authorized to apply your
+                    cryptographic signature to this document.
+                  </p>
+                </div>
+                <button
+                  className="btn btn-primary h-14 text-lg shadow-xl shadow-primary/40"
+                  onClick={sign}
+                  disabled={loading || !session}
+                >
+                  {loading ? (
+                    <>
+                      <ArrowPathIcon className="h-6 w-6 animate-spin mr-2" />
+                      Signing Document...
+                    </>
+                  ) : (
+                    "Execute Cryptographic Signature"
+                  )}
+                </button>
               </div>
-              <a className="link mt-3 block break-all text-sm" href={result.verificationLink}>
-                {result.verificationLink}
-              </a>
-              {result.callbackUrl && (
-                <a className="btn btn-outline mt-4 min-h-11 rounded-lg" href={result.callbackUrl}>
-                  Return to agency app
-                </a>
-              )}
-            </div>
-          )}
+            )}
 
-          {error && <div className="alert alert-error rounded-lg text-sm">{error}</div>}
+            {result && (
+              <div className="flex-1 flex flex-col items-center justify-center text-center animate-in zoom-in duration-500">
+                <div className="h-24 w-24 rounded-full bg-primary/5 flex items-center justify-center text-primary mb-8 shadow-inner border border-primary/10">
+                  <CheckCircleIcon className="h-12 w-12" />
+                </div>
+                <h3 className="text-3xl font-black text-base-content">Signature Execution Complete</h3>
+                <p className="text-base-content/60 mt-4 max-w-sm leading-relaxed mb-10">
+                  Your signature has been permanently recorded on-chain. The document&apos;s provenance is now
+                  verifiable.
+                </p>
+                <div className="grid gap-4 w-full mb-10">
+                  <div className="card p-6 bg-base-200/50 border-base-300 text-left">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-base-content/40 mb-2">
+                      Audit Link
+                    </p>
+                    <Link
+                      href={result.verificationLink}
+                      className="font-mono text-sm text-primary font-bold m-0 break-all flex items-center gap-2"
+                    >
+                      {result.verificationLink}
+                      <ArrowRightIcon className="h-3 w-3" />
+                    </Link>
+                  </div>
+                </div>
+
+                {result.callbackUrl && (
+                  <a
+                    className="btn btn-primary h-14 w-full text-lg shadow-xl shadow-primary/20"
+                    href={result.callbackUrl}
+                  >
+                    Return to Originating Agency
+                  </a>
+                )}
+              </div>
+            )}
+
+            {error && (
+              <div className="mt-8 rounded-2xl bg-error/5 border border-error/10 p-4 flex items-center gap-3 text-error font-bold animate-in shake duration-500">
+                <ExclamationTriangleIcon className="h-5 w-5 shrink-0" />
+                <span className="text-sm">{error}</span>
+              </div>
+            )}
+          </div>
         </div>
       </section>
+
+      <NdiModal
+        isOpen={isNdiModalOpen}
+        onClose={() => setIsNdiModalOpen(false)}
+        onSuccess={handleNdiSuccess}
+        title="Authorize Signing"
+      />
     </main>
   );
 };
 
 const SignPage = () => (
-  <Suspense fallback={<main className="min-h-dvh p-8">Loading signing session...</main>}>
+  <Suspense
+    fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    }
+  >
     <SignSurface />
   </Suspense>
 );
