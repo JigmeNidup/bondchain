@@ -1,5 +1,6 @@
 # BondChain
 
+
 BondChain is an NDI-gated document signing and verification app. It binds a Bhutan NDI identity to a Privy server wallet, signs document hashes through Privy, stores document files on IPFS through Pinata, and writes audit records to Ethereum Sepolia.
 
 ## What It Does
@@ -151,3 +152,9 @@ yarn next:build
 - `docHash` is not unique in the database or `DocumentRegistry`; repeated uploads create separate records.
 - User-to-user target CID values are normalized and stored only as SHA-256 hashes.
 - Public verification shows signer wallet hashes, not raw signer wallet addresses.
+
+
+
+
+presentaion link:
+https://prezi.com/craft/share/pozzvuydswn9?referral_token=Y5atXclnB3FN
