@@ -14,7 +14,10 @@ BondChain is an NDI-gated document signing and verification app. It binds a Bhut
 - Send user-to-user signing requests by email.
 - Validate the target signer by CID hash from their NDI proof.
 - Verify a linked signature chain from requester to target signer.
-- Show a private history page for uploaded, sent, received, and signed documents.
+- Let citizens submit agency service requests with ordered officer workflows.
+- Let agency officers verify, sign, reject, and issue certificate credentials.
+- Verify an uploaded document hash and list all signatures recorded for that document.
+- Show a private history page for uploaded, sent, received, signed, and agency-service documents.
 
 NDI is only used for identity and session gating. Privy performs all cryptographic signing.
 
@@ -26,12 +29,20 @@ NDI is only used for identity and session gating. Privy performs all cryptograph
 | `/onboard` | NDI login and Privy wallet binding |
 | `/user-to-user` | Upload a PDF, sign it, and send a target signer request |
 | `/user-to-user/sign/[token]` | Target signer PDF preview and countersigning flow |
+| `/services` | Public citizen service catalog |
+| `/services/[serviceId]` | Citizen service request submission |
+| `/agency` | Agency admin console for officers, services, workflows, and requests |
+| `/agency/register/[token]` | Agency admin invitation registration |
+| `/agency/officer/register/[token]` | Agency officer invitation registration |
+| `/agency/requests/[token]` | Officer workflow action page |
+| `/admin` | Platform admin agency enrollment page |
 | `/history` | Private NDI-gated signing history |
-| `/sign` | API signing overlay for external apps |
+| `/sign` | API signing overlay for external apps, not shown in header navigation |
+| `/verify/document` | Upload a document, compute its hash, and list all signatures for that hash |
 | `/verify/[signatureHash]` | Public verification page with linked signature chain |
 | `/verify/[signatureHash]/signer` | NDI-based signer hash verification |
 
-Developer wallet-connect UI, faucet UI, block explorer pages, and debug contract screens are intentionally removed from the product navigation.
+Developer wallet-connect UI, faucet UI, block explorer pages, debug contract screens, `/sign`, and `/verify/demo` are intentionally removed from the product navigation.
 
 ## Repository Structure
 
@@ -135,6 +146,18 @@ Deploy contracts:
 yarn deploy --network sepolia
 ```
 
+If Sepolia returns `replacement transaction underpriced`, the deployer account likely has a pending nonce. Resume the latest broadcast with a higher EIP-1559 fee:
+
+```bash
+yarn deploy --network sepolia --gas-price 2gwei --priority-gas-price 1gwei --resume --slow
+```
+
+If it is still underpriced, increase both gas values, for example:
+
+```bash
+yarn deploy --network sepolia --gas-price 5gwei --priority-gas-price 2gwei --resume --slow
+```
+
 After redeploying, update the backend contract address environment variables. The current `DocumentRegistry` supports multiple records for the same `docHash`; redeploy it before relying on duplicate document hash registrations on-chain.
 
 ## Verification Commands
@@ -155,6 +178,8 @@ yarn next:build
 - `docHash` is not unique in the database or `DocumentRegistry`; repeated uploads create separate records.
 - User-to-user target CID values are normalized and stored only as SHA-256 hashes.
 - Public verification shows signer wallet hashes, not raw signer wallet addresses.
+- Certificate issuance stores the certificate PDF on IPFS, but the issuer signature continues the existing agency request signature chain instead of starting a new chain from the certificate PDF hash.
+- `/verify/document` computes `keccak256(file bytes)` in the browser, then calls the backend to list all signatures stored for that exact document hash.
 
 
 
