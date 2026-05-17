@@ -1,5 +1,8 @@
 # BondChain
 
+platform : https://bondchain.jigmenidup.site
+
+dms link: https://dms.jigmenidup.site
 
 BondChain is an NDI-gated document signing and verification app. It binds a Bhutan NDI identity to a Privy server wallet, signs document hashes through Privy, stores document files on IPFS through Pinata, and writes audit records to Ethereum Sepolia.
 
