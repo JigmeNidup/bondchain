@@ -1261,7 +1261,7 @@ const deployedContracts = {
   },
   11155111: {
     IdentityRegistry: {
-      address: "0x9adc1445e1814ee1f68a973db24708c35f68aa77",
+      address: "0x7929f460bacf3f044a7cef110491753a5a58c086",
       abi: [
         {
           type: "constructor",
@@ -1487,10 +1487,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 10865716,
+      deployedOnBlock: 10866782,
     },
     DocumentRegistry: {
-      address: "0xc4c9a15ecf1c8086241a72f4a21f7414f8236dbf",
+      address: "0x58f9346458192854fb57c0560060ec3581aef3a9",
       abi: [
         {
           type: "constructor",
@@ -1815,10 +1815,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 10865716,
+      deployedOnBlock: 10866782,
     },
     SignatureLog: {
-      address: "0x688cc080cdc6a8d291d671baa8047abef087d188",
+      address: "0x00efee79478f20363ec0ece9955fd0fa3ebc33ca",
       abi: [
         {
           type: "constructor",
@@ -2156,10 +2156,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 10865716,
+      deployedOnBlock: 10866782,
     },
     WorkflowTracker: {
-      address: "0x965f3bff76582be13bdd8b766431643530a510aa",
+      address: "0x15c272bb51dad56af431af877df7c583ce160f8c",
       abi: [
         {
           type: "constructor",
@@ -2510,10 +2510,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 10865716,
+      deployedOnBlock: 10866782,
     },
     AgencyRegistry: {
-      address: "0xa669f97db5856ee02160193a578f7c4faa24a919",
+      address: "0x840ac29ebae068c30ea11acf5ea7ebc2a57f4214",
       abi: [
         {
           type: "constructor",
@@ -2864,7 +2864,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 10865716,
+      deployedOnBlock: 10866782,
     },
   },
 } as const;

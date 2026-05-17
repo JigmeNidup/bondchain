@@ -14,6 +14,7 @@ const args = process.argv.slice(2);
 let fileName = "Deploy.s.sol";
 let network = "localhost";
 let keystoreArg = null;
+const forgeScriptArgs = [];
 
 // Show help message if --help is provided
 if (args.includes("--help") || args.includes("-h")) {
@@ -23,10 +24,16 @@ Options:
   --file <filename>     Specify the deployment script file (default: Deploy.s.sol)
   --network <network>   Specify the network (default: localhost)
   --keystore <name>     Specify the keystore account to use (bypasses selection prompt)
+  --gas-price <price>   Set max fee per gas for deployment transactions, e.g. 2gwei
+  --priority-gas-price <price>
+                        Set max priority fee per gas, e.g. 1gwei
+  --resume              Resume the latest failed/timed-out broadcast
+  --slow                Send each transaction only after the previous one is confirmed
   --help, -h           Show this help message
 Examples:
   yarn deploy --file DeployYourContract.s.sol --network sepolia
   yarn deploy --network sepolia --keystore my-account
+  yarn deploy --network sepolia --gas-price 2gwei --priority-gas-price 1gwei --resume --slow
   yarn deploy --file DeployYourContract.s.sol
   yarn deploy
   `);
@@ -44,6 +51,16 @@ for (let i = 0; i < args.length; i++) {
   } else if (args[i] === "--keystore" && args[i + 1]) {
     keystoreArg = args[i + 1];
     i++; // Skip next arg since we used it
+  } else if (args[i] === "--gas-price" && args[i + 1]) {
+    forgeScriptArgs.push("--with-gas-price", args[i + 1]);
+    i++;
+  } else if (args[i] === "--priority-gas-price" && args[i + 1]) {
+    forgeScriptArgs.push("--priority-gas-price", args[i + 1]);
+    i++;
+  } else if (args[i] === "--resume") {
+    forgeScriptArgs.push("--resume");
+  } else if (args[i] === "--slow") {
+    forgeScriptArgs.push("--slow");
   }
 }
 
@@ -152,6 +169,7 @@ The default account (scaffold-eth-default) can only be used for localhost deploy
 process.env.DEPLOY_SCRIPT = `script/${fileName}`;
 process.env.RPC_URL = network;
 process.env.ETH_KEYSTORE_ACCOUNT = selectedKeystore;
+process.env.FORGE_SCRIPT_ARGS = forgeScriptArgs.join(" ");
 
 const result = spawnSync("make", ["deploy-and-generate-abis"], {
   stdio: "inherit",
