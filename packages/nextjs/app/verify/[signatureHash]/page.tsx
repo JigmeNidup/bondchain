@@ -1,19 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { keccak256 } from "viem";
 import {
   ArrowTopRightOnSquareIcon,
   CheckCircleIcon,
-  ChevronRightIcon,
   ClockIcon,
   CubeIcon,
   DocumentMagnifyingGlassIcon,
   ExclamationTriangleIcon,
   FingerPrintIcon,
-  ShieldCheckIcon,
+  XCircleIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { bondchainFetch } from "~~/utils/bondchainApi";
@@ -39,7 +39,7 @@ type Verification = {
   } | null;
 };
 
-const shortHash = (value: string) => (value.length > 20 ? `${value.slice(0, 12)}...${value.slice(-10)}` : value);
+const shortHash = (value: string) => (value.length > 20 ? `${value.slice(0, 10)}…${value.slice(-8)}` : value);
 
 const formatDate = (value: string) => {
   const date = new Date(value);
@@ -79,7 +79,7 @@ const VerifyPage = () => {
     setDocumentCheck({
       fileName: documentFile.name,
       documentHash,
-      matchedCount: results.filter(result => result.matched).length,
+      matchedCount: results.filter(r => r.matched).length,
       totalCount: results.length,
       results,
     });
@@ -92,286 +92,260 @@ const VerifyPage = () => {
       .catch(err => setError(err instanceof Error ? err.message : "Verification failed"));
   }, [signatureHash]);
 
+  const isVerified = verification?.chainStatus === "VERIFIED";
+
   return (
-    <main className="mx-auto min-h-[calc(100dvh-80px)] w-full max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
-      {/* Header / Brand Area */}
-      <div className="text-center mb-16 animate-in fade-in duration-700">
-        <div className="h-20 w-20 rounded-3xl bg-primary/5 flex items-center justify-center text-primary mx-auto mb-8 shadow-inner border border-primary/10">
-          <ShieldCheckIcon className="h-10 w-10" />
+    <main className="mx-auto min-h-[calc(100dvh-80px)] w-full max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+      {/* Loading */}
+      {!verification && !error && (
+        <div className="flex flex-col items-center justify-center py-32 gap-4">
+          <div className="h-10 w-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs font-black uppercase tracking-widest text-base-content/40">Syncing with Registry…</p>
         </div>
-        <h1 className="text-4xl font-black text-base-content leading-tight">Certificate of Authenticity</h1>
-        <p className="mt-4 text-base-content/60 max-w-xl mx-auto leading-relaxed">
-          Public verification of a cryptographically secured civic document, signed and recorded on the BondChain
-          protocol.
-        </p>
-      </div>
+      )}
 
-      <section className="grid gap-8 lg:grid-cols-[1fr_350px]">
-        <div className="space-y-8">
-          {error && (
-            <div className="rounded-2xl bg-error/5 border border-error/10 p-6 flex items-center gap-4 text-error font-bold animate-in shake duration-500">
-              <ExclamationTriangleIcon className="h-6 w-6 shrink-0" />
-              <p className="m-0">{error}</p>
-            </div>
-          )}
+      {/* Error */}
+      {error && (
+        <div className="flex items-center gap-3 rounded-2xl border border-error/10 bg-error/5 p-5 text-error">
+          <ExclamationTriangleIcon className="h-5 w-5 shrink-0" />
+          <span className="text-sm font-bold">{error}</span>
+        </div>
+      )}
 
-          {!verification && !error && (
-            <div className="card py-24 flex flex-col items-center justify-center border-dashed border-2 bg-base-200/30">
-              <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-6" />
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-base-content/40">
-                Syncing with Sepolia Registry
-              </p>
-            </div>
-          )}
+      {verification && (
+        <div className="animate-in fade-in duration-500">
+          {/* Certificate Card */}
+          <div className="relative rounded-3xl border border-base-200 bg-base-100 shadow-sm overflow-hidden mb-8">
+            {/* Top accent stripe */}
+            <div className={`h-1.5 w-full ${isVerified ? "bg-success" : "bg-error"}`} />
 
-          {verification && (
-            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-              {/* Status Banner */}
+            {/* Certificate header */}
+            <div className="flex flex-col items-center px-8 pt-10 pb-8 border-b border-base-200 text-center">
+              {/* Seal */}
               <div
-                className={`rounded-[2.5rem] p-10 flex flex-col md:flex-row items-center gap-10 shadow-2xl relative overflow-hidden ${
-                  verification.chainStatus === "VERIFIED" ? "bg-success/10 text-success" : "bg-error/10 text-error"
-                }`}
+                className={`relative mb-6 h-20 w-20 rounded-full flex items-center justify-center border-4 ${isVerified ? "border-success/30 bg-success/5 text-success" : "border-error/30 bg-error/5 text-error"}`}
               >
+                <Image src="/logo.png" alt="BondChain" width={36} height={36} className="object-contain" />
                 <div
-                  className={`absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.2),transparent_70%)]`}
+                  className={`absolute -inset-2 rounded-full border-2 border-dashed animate-spin [animation-duration:12s] ${isVerified ? "border-success/20" : "border-error/20"}`}
                 />
-
-                <div
-                  className={`h-24 w-24 shrink-0 rounded-full flex items-center justify-center shadow-inner relative z-10 ${
-                    verification.chainStatus === "VERIFIED" ? "bg-success/20" : "bg-error/20"
-                  }`}
-                >
-                  <ShieldCheckIcon className="h-12 w-12" />
-                </div>
-
-                <div className="relative z-10 flex-1 text-center md:text-left">
-                  <span className="text-xs font-black uppercase tracking-[0.3em] opacity-60">Verification Result</span>
-                  <h2 className="text-2xl font-black mt-2 mb-4">
-                    {verification.chainStatus === "VERIFIED" ? "Integrity Validated" : "Chain Compromised"}
-                  </h2>
-                  <p className="opacity-70 leading-relaxed m-0 max-w-md">
-                    The document has been traced through {verification.chain.length} independent signatures without any
-                    modification to the cryptographic payload.
-                  </p>
-                </div>
               </div>
 
-              {/* Provenance Visualization */}
-              <div className="card p-10 bg-base-100">
-                <div className="flex items-center justify-between mb-10 pb-6 border-b border-base-300">
-                  <h3 className="text-xl font-black text-base-content">Provenance Timeline</h3>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-base-content/40 bg-base-200 px-2 py-1 rounded">
-                    Blockchain Event Log
-                  </span>
-                </div>
+              <p className="text-xs font-black uppercase tracking-[0.25em] text-base-content/40 mb-2">
+                Kingdom of Bhutan · BondChain Protocol
+              </p>
+              <h1 className="text-2xl font-black text-base-content tracking-tight">Certificate of Authenticity</h1>
+              <p className="mt-2 text-sm text-base-content/40 max-w-sm leading-relaxed">
+                Public verification of a cryptographically secured civic document
+              </p>
 
-                <div className="relative space-y-12">
-                  <div className="absolute left-[31px] top-4 bottom-4 w-0.5 bg-base-300 -z-0" />
-
-                  {verification.chain.map((item, index) => {
-                    const isFinal = index === verification.chain.length - 1;
-                    return (
-                      <div key={item.signatureHash} className="flex gap-8 relative z-10 group">
-                        <div
-                          className={`h-16 w-16 shrink-0 rounded-2xl flex items-center justify-center border-2 transition-all shadow-sm ${
-                            isFinal
-                              ? "bg-primary border-primary text-primary-content shadow-primary/20 scale-110"
-                              : "bg-base-100 border-base-300 text-base-content/40 group-hover:border-primary/40 group-hover:text-primary"
-                          }`}
-                        >
-                          <FingerPrintIcon className="h-8 w-8" />
-                        </div>
-
-                        <div className="flex-1 py-2">
-                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3">
-                            <h4 className="text-lg font-black text-base-content m-0">
-                              Signature Execution #{index + 1}
-                            </h4>
-                            <span className="text-xs font-bold text-base-content/40">{formatDate(item.createdAt)}</span>
-                          </div>
-                          <div className="flex flex-col gap-2">
-                            <div className="flex items-center gap-2 font-mono text-xs text-base-content/40">
-                              <span className="text-[10px] font-black text-base-content/20">SIG</span>
-                              {shortHash(item.signatureHash)}
-                            </div>
-                            <button
-                              onClick={() => setSelectedSignature(item)}
-                              className="text-xs font-black text-primary hover:underline w-fit mt-2 flex items-center gap-1"
-                            >
-                              View Cryptographic Details
-                              <ChevronRightIcon className="h-3 w-3" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+              {/* Status badge */}
+              <div
+                className={`mt-6 inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-black ${isVerified ? "bg-success/10 text-success" : "bg-error/10 text-error"}`}
+              >
+                {isVerified ? <CheckCircleIcon className="h-4 w-4" /> : <XCircleIcon className="h-4 w-4" />}
+                {isVerified ? "Chain Integrity Verified" : "Chain Compromised"}
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Technical Sidebar */}
-        <aside className="space-y-6">
-          {verification && (
-            <>
-              <div className="card p-8 bg-neutral text-neutral-content overflow-hidden relative border-none">
-                <div className="absolute top-0 right-0 p-4 opacity-10">
-                  <CubeIcon className="h-24 w-24" />
-                </div>
-                <h3 className="text-sm font-black uppercase tracking-widest text-neutral-content/40 mb-6">
-                  Technical Parameters
-                </h3>
-                <div className="space-y-6 relative z-10">
-                  <div>
-                    <p className="text-[10px] font-black text-neutral-content/60 mb-2">Content Fingerprint</p>
-                    <p className="font-mono text-xs break-all text-neutral-content/80 leading-relaxed">
-                      {verification.signature.docHash}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black text-neutral-content/60 mb-2">Registry Pointer</p>
-                    <p className="font-mono text-xs break-all text-neutral-content/80 leading-relaxed">
-                      {verification.signature.txHash}
-                    </p>
-                  </div>
+            {/* Certificate body — key facts */}
+            <div className="grid divide-y divide-base-200 sm:grid-cols-2 sm:divide-y-0 sm:divide-x">
+              <div className="px-8 py-6">
+                <p className="text-[10px] font-black uppercase tracking-widest text-base-content/30 mb-1">
+                  Signatures in Chain
+                </p>
+                <p className="text-3xl font-black text-base-content">{verification.chain.length}</p>
+                <p className="text-xs text-base-content/40 mt-0.5">independent signatories</p>
+              </div>
+              <div className="px-8 py-6">
+                <p className="text-[10px] font-black uppercase tracking-widest text-base-content/30 mb-1">
+                  First Signed
+                </p>
+                <p className="text-sm font-bold text-base-content">
+                  {formatDate(verification.chain[0]?.createdAt ?? verification.signature.createdAt)}
+                </p>
+                <p className="text-xs text-base-content/40 mt-0.5">origin timestamp</p>
+              </div>
+            </div>
 
-                  <div className="rounded-2xl bg-neutral-content/10 p-4">
-                    <label className="block">
-                      <span className="mb-2 block text-[10px] font-black uppercase tracking-widest text-neutral-content/60">
-                        Document Verification
-                      </span>
-                      <input
-                        className="file-input file-input-bordered file-input-primary w-full bg-base-100 text-base-content"
-                        type="file"
-                        accept="application/pdf,.pdf"
-                        onChange={event => {
-                          setDocumentFile(event.target.files?.[0] || null);
-                          setDocumentCheck(null);
-                        }}
-                      />
-                    </label>
-                    <button
-                      className="btn btn-primary mt-3 h-12 w-full text-sm shadow-xl"
-                      disabled={!documentFile}
-                      onClick={verifyDocumentFile}
-                      type="button"
+            {/* Hashes */}
+            <div className="px-8 py-6 border-t border-base-200 space-y-4">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-base-content/30 mb-1.5">
+                  Document Hash
+                </p>
+                <p className="font-mono text-xs text-base-content/60 break-all leading-relaxed bg-base-200/50 rounded-xl px-4 py-3">
+                  {verification.signature.docHash}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-base-content/30 mb-1.5">
+                  Registry Transaction
+                </p>
+                <p className="font-mono text-xs text-base-content/60 break-all leading-relaxed bg-base-200/50 rounded-xl px-4 py-3">
+                  {verification.signature.txHash}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Signature Timeline */}
+          <div className="rounded-3xl border border-base-200 bg-base-100 shadow-sm overflow-hidden mb-8">
+            <div className="flex items-center justify-between px-8 py-5 border-b border-base-200">
+              <h2 className="text-sm font-black text-base-content uppercase tracking-widest">Provenance Timeline</h2>
+              <span className="text-[10px] font-black uppercase tracking-widest text-base-content/30 bg-base-200 px-2.5 py-1 rounded-lg">
+                {verification.chain.length} event{verification.chain.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+
+            <div className="divide-y divide-base-200">
+              {verification.chain.map((item, index) => {
+                const isFinal = index === verification.chain.length - 1;
+                return (
+                  <div
+                    key={item.signatureHash}
+                    className="flex items-center gap-5 px-8 py-5 hover:bg-base-200/30 transition-colors"
+                  >
+                    <div
+                      className={`shrink-0 h-9 w-9 rounded-full flex items-center justify-center text-xs font-black border-2 ${isFinal ? "bg-primary border-primary text-primary-content" : "border-base-300 text-base-content/40 bg-base-100"}`}
                     >
-                      <DocumentMagnifyingGlassIcon className="mr-2 h-4 w-4" />
-                      Verify Document
+                      {index + 1}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-base-content truncate">Signature #{index + 1}</p>
+                      <p className="font-mono text-xs text-base-content/30 truncate">{shortHash(item.signatureHash)}</p>
+                    </div>
+                    <div className="hidden sm:block text-right shrink-0">
+                      <p className="text-xs text-base-content/40">{formatDate(item.createdAt)}</p>
+                    </div>
+                    <button
+                      onClick={() => setSelectedSignature(item)}
+                      className="shrink-0 text-xs font-bold text-primary hover:underline flex items-center gap-1"
+                    >
+                      Details
+                      <ArrowTopRightOnSquareIcon className="h-3 w-3" />
                     </button>
                   </div>
-                </div>
-              </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Verify Document */}
+          <div className="rounded-3xl border border-base-200 bg-base-100 shadow-sm overflow-hidden">
+            <div className="px-8 py-5 border-b border-base-200">
+              <h2 className="text-sm font-black text-base-content uppercase tracking-widest">Verify Your Document</h2>
+              <p className="text-xs text-base-content/40 mt-0.5">
+                Upload the original PDF to confirm it matches this certificate
+              </p>
+            </div>
+            <div className="px-8 py-6 space-y-4">
+              <input
+                className="file-input file-input-bordered w-full bg-base-200/50 border-base-300 text-sm"
+                type="file"
+                accept="application/pdf,.pdf"
+                onChange={e => {
+                  setDocumentFile(e.target.files?.[0] || null);
+                  setDocumentCheck(null);
+                }}
+              />
+              <button
+                className="btn btn-primary h-11 w-full gap-2 text-sm"
+                disabled={!documentFile}
+                onClick={verifyDocumentFile}
+              >
+                <DocumentMagnifyingGlassIcon className="h-4 w-4" />
+                Verify Document
+              </button>
 
               {documentCheck && (
                 <div
-                  className={`card p-8 ${
-                    documentCheck.matchedCount === documentCheck.totalCount
-                      ? "border-success/20 bg-success/5"
-                      : "border-warning/20 bg-warning/5"
-                  }`}
+                  className={`rounded-2xl border p-5 ${documentCheck.matchedCount === documentCheck.totalCount ? "border-success/20 bg-success/5" : "border-warning/20 bg-warning/5"}`}
                 >
                   <div
-                    className={`mb-5 flex items-center gap-3 ${
-                      documentCheck.matchedCount === documentCheck.totalCount ? "text-success" : "text-warning"
-                    }`}
+                    className={`flex items-center gap-2 mb-3 ${documentCheck.matchedCount === documentCheck.totalCount ? "text-success" : "text-warning"}`}
                   >
                     {documentCheck.matchedCount === documentCheck.totalCount ? (
-                      <CheckCircleIcon className="h-6 w-6" />
+                      <CheckCircleIcon className="h-5 w-5" />
                     ) : (
-                      <ExclamationTriangleIcon className="h-6 w-6" />
+                      <ExclamationTriangleIcon className="h-5 w-5" />
                     )}
-                    <h3 className="text-sm font-black text-base-content">Document Match</h3>
+                    <span className="text-sm font-black">
+                      {documentCheck.matchedCount} of {documentCheck.totalCount} signatures matched
+                    </span>
                   </div>
-                  <p className="mb-4 text-sm text-base-content/60">
-                    {documentCheck.matchedCount} of {documentCheck.totalCount} signatures match the uploaded file.
+                  <p className="font-mono text-[11px] text-base-content/40 break-all mb-3">
+                    {documentCheck.documentHash}
                   </p>
-                  <p className="mb-5 font-mono text-xs break-all text-base-content/60">{documentCheck.documentHash}</p>
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     {documentCheck.results.map((result, index) => (
-                      <div key={result.signatureHash} className="flex items-center justify-between gap-3 text-xs">
-                        <span className="font-bold text-base-content/70">Signature #{index + 1}</span>
-                        <span className={`badge ${result.matched ? "badge-success" : "badge-warning"}`}>
-                          {result.matched ? "Matched" : "Different hash"}
+                      <div key={result.signatureHash} className="flex items-center justify-between text-xs">
+                        <span className="font-bold text-base-content/60">Signature #{index + 1}</span>
+                        <span className={`badge badge-sm ${result.matched ? "badge-success" : "badge-warning"}`}>
+                          {result.matched ? "Matched" : "Different"}
                         </span>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
-
-              <div className="card p-8 border-base-300">
-                <h3 className="text-sm font-black text-base-content mb-4">Provenance Summary</h3>
-                <p className="text-sm text-base-content/60 leading-relaxed mb-6">
-                  This document was originally uploaded and signed on the date specified in the first event log. Every
-                  subsequent signature strengthens the verification chain.
-                </p>
-                <div className="flex items-center gap-3 text-success">
-                  <ShieldCheckIcon className="h-5 w-5" />
-                  <span className="text-xs font-black uppercase tracking-widest">Protocol Version 1.0</span>
-                </div>
-              </div>
-            </>
-          )}
-        </aside>
-      </section>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Detail Modal */}
       {selectedSignature && (
-        <div className="modal modal-open backdrop-blur-md" role="dialog">
-          <div className="modal-box max-w-2xl rounded-[2.5rem] p-0 overflow-hidden shadow-2xl border-none bg-base-100">
-            <div className="bg-neutral px-10 py-10 text-neutral-content">
-              <div className="flex items-center justify-between mb-8">
-                <div className="h-12 w-12 rounded-2xl bg-primary/20 flex items-center justify-center text-primary">
-                  <FingerPrintIcon className="h-6 w-6" />
+        <div className="modal modal-open backdrop-blur-sm" role="dialog">
+          <div className="modal-box max-w-lg rounded-3xl p-0 overflow-hidden shadow-2xl bg-base-100 border border-base-200">
+            <div className="flex items-center justify-between px-8 py-6 border-b border-base-200">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                  <FingerPrintIcon className="h-5 w-5" />
                 </div>
-                <button
-                  className="btn btn-ghost btn-circle text-neutral-content/40 hover:bg-white/10"
-                  onClick={() => setSelectedSignature(null)}
-                >
-                  <XMarkIcon className="h-6 w-6" />
-                </button>
+                <h3 className="text-base font-black text-base-content">Signature Detail</h3>
               </div>
-              <h3 className="text-2xl font-black">Audit Detail</h3>
-              <p className="text-neutral-content/40 mt-2 font-mono text-xs">{selectedSignature.signatureHash}</p>
+              <button className="btn btn-ghost btn-sm btn-circle" onClick={() => setSelectedSignature(null)}>
+                <XMarkIcon className="h-5 w-5" />
+              </button>
             </div>
 
-            <div className="p-10 space-y-6">
-              {[
-                ["Document Payload", selectedSignature.docHash, CubeIcon],
-                ["Signer Proof (Salted)", selectedSignature.signerWalletHash, FingerPrintIcon],
-                ["Blockchain Transaction", selectedSignature.txHash, ArrowTopRightOnSquareIcon],
-                ["Timestamp", formatDate(selectedSignature.createdAt), ClockIcon],
-              ].map(([label, value, Icon]) => (
-                <div key={label as string} className="flex gap-4">
-                  <div className="h-8 w-8 shrink-0 rounded-lg bg-base-200 flex items-center justify-center text-base-content/40 border border-base-300">
+            <div className="px-8 py-6 space-y-5">
+              {(
+                [
+                  ["Document Hash", selectedSignature.docHash, CubeIcon],
+                  ["Signer Proof", selectedSignature.signerWalletHash, FingerPrintIcon],
+                  ["Transaction", selectedSignature.txHash, ArrowTopRightOnSquareIcon],
+                  ["Timestamp", formatDate(selectedSignature.createdAt), ClockIcon],
+                ] as [string, string, React.ElementType][]
+              ).map(([label, value, Icon]) => (
+                <div key={label} className="flex gap-3">
+                  <div className="h-8 w-8 shrink-0 rounded-lg bg-base-200 flex items-center justify-center text-base-content/40">
                     <Icon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-base-content/40 mb-1">
-                      {label as string}
+                    <p className="text-[10px] font-black uppercase tracking-widest text-base-content/30 mb-0.5">
+                      {label}
                     </p>
-                    <p className="text-sm font-mono text-base-content break-all m-0">{value as string}</p>
+                    <p className="text-xs font-mono text-base-content break-all">{value}</p>
                   </div>
                 </div>
               ))}
+            </div>
 
-              <div className="pt-8 flex gap-4">
-                <Link
-                  href={`/verify/${selectedSignature.signatureHash}/signer`}
-                  className="btn btn-primary flex-1 h-14 text-sm font-bold"
-                >
-                  Verify NDI Identity
-                </Link>
-                <button className="btn btn-ghost h-14 px-8 font-bold" onClick={() => setSelectedSignature(null)}>
-                  Dismiss
-                </button>
-              </div>
+            <div className="px-8 py-5 border-t border-base-200 flex gap-3">
+              <Link
+                href={`/verify/${selectedSignature.signatureHash}/signer`}
+                className="btn btn-primary flex-1 h-11 text-sm"
+              >
+                Verify NDI Identity
+              </Link>
+              <button className="btn btn-ghost h-11 px-6 text-sm" onClick={() => setSelectedSignature(null)}>
+                Close
+              </button>
             </div>
           </div>
-          <div className="modal-backdrop bg-slate-950/40" onClick={() => setSelectedSignature(null)} />
+          <div className="modal-backdrop" onClick={() => setSelectedSignature(null)} />
         </div>
       )}
     </main>

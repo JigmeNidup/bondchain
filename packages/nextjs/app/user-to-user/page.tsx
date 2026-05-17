@@ -186,18 +186,6 @@ const UserToUserPage = () => {
       {/* Action Center */}
       <section className="card p-2 shadow-xl bg-base-200/50">
         <div className="card h-full flex flex-col p-8 md:p-12 overflow-hidden bg-base-100 border-none">
-          <div className="flex items-center justify-between border-b border-base-300 pb-8 mb-8">
-            <h2 className="text-xl font-black text-base-content">Workflow Execution</h2>
-            <div className="flex items-center gap-2">
-              <span
-                className={`h-2 w-2 rounded-full ${session?.status === "VERIFIED" ? "bg-secondary animate-pulse" : "bg-base-300"}`}
-              />
-              <span className="text-xs font-bold uppercase tracking-widest text-base-content/40">
-                {session?.status === "VERIFIED" ? "Identity Active" : "Authentication Required"}
-              </span>
-            </div>
-          </div>
-
           <div className="flex-1 flex flex-col">
             {session?.status !== "VERIFIED" && (
               <div className="flex-1 flex flex-col items-center justify-center text-center animate-in fade-in duration-700">
@@ -221,39 +209,56 @@ const UserToUserPage = () => {
             {session?.status === "VERIFIED" && !document && (
               <div className="flex-1 flex flex-col animate-in fade-in duration-700">
                 <h2 className="text-2xl font-black text-base-content mb-8">1. Upload Document</h2>
-                <div
-                  className="flex-1 border-2 border-dashed border-base-300 rounded-[2.5rem] bg-base-200/50 flex flex-col items-center justify-center p-12 hover:border-secondary/40 hover:bg-base-300/30 transition-all cursor-pointer group"
-                  onClick={() => window.document.getElementById("file-upload")?.click()}
-                >
-                  <div className="h-16 w-16 rounded-3xl bg-base-100 text-base-content/20 flex items-center justify-center mb-6 shadow-sm group-hover:text-secondary transition-colors">
-                    <DocumentArrowUpIcon className="h-8 w-8" />
+
+                {loading ? (
+                  <div className="flex-1 border-2 border-dashed border-secondary/30 rounded-[2.5rem] bg-secondary/5 flex flex-col items-center justify-center p-12">
+                    <div className="relative mb-6">
+                      <div className="h-16 w-16 rounded-3xl bg-base-100 flex items-center justify-center shadow-sm border border-base-300">
+                        <DocumentArrowUpIcon className="h-8 w-8 text-secondary" />
+                      </div>
+                      <div className="absolute -inset-2 rounded-[1.5rem] border-2 border-secondary/30 border-t-secondary animate-spin" />
+                    </div>
+                    <p className="text-base font-bold text-base-content">Uploading document…</p>
+                    <p className="text-sm text-base-content/40 mt-1">Please wait while your file is being processed</p>
                   </div>
-                  <p className="text-lg font-bold text-base-content m-0">Select PDF Notesheet</p>
-                  <p className="text-sm text-base-content/40 mt-2">Maximum file size 10MB</p>
-                  <input
-                    id="file-upload"
-                    type="file"
-                    className="hidden"
-                    accept="application/pdf"
-                    onChange={uploadDocument}
-                  />
-                </div>
+                ) : (
+                  <div
+                    className="flex-1 border-2 border-dashed border-base-300 rounded-[2.5rem] bg-base-200/50 flex flex-col items-center justify-center p-12 hover:border-secondary/40 hover:bg-base-300/30 transition-all cursor-pointer group"
+                    onClick={() => window.document.getElementById("file-upload")?.click()}
+                  >
+                    <div className="h-16 w-16 rounded-3xl bg-base-100 text-base-content/20 flex items-center justify-center mb-6 shadow-sm group-hover:text-secondary transition-colors">
+                      <DocumentArrowUpIcon className="h-8 w-8" />
+                    </div>
+                    <p className="text-lg font-bold text-base-content m-0">Select PDF Notesheet</p>
+                    <p className="text-sm text-base-content/40 mt-2">Maximum file size 10MB</p>
+                    <input
+                      id="file-upload"
+                      type="file"
+                      className="hidden"
+                      accept="application/pdf"
+                      onChange={uploadDocument}
+                    />
+                  </div>
+                )}
               </div>
             )}
 
             {document && !signature && (
               <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <h2 className="text-2xl font-black text-base-content mb-6">2. Apply Origin Signature</h2>
-
-                <div className="card p-6 border-base-300 bg-base-200/50 mb-8">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-base-content/40 mb-2">
-                    Content Hash
-                  </p>
-                  <p className="font-mono text-sm text-secondary font-bold m-0 break-all">{document.docHash}</p>
+                <div className="flex items-start justify-between gap-4 mb-6">
+                  <h2 className="text-2xl font-black text-base-content">2. Apply Origin Signature</h2>
+                  <div className="text-right shrink-0">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-base-content/40 mb-1">
+                      Content Hash
+                    </p>
+                    <p className="font-mono text-xs text-secondary font-bold break-all max-w-[220px]">
+                      {document.docHash.slice(0, 18)}…{document.docHash.slice(-10)}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="flex-1 relative rounded-2xl overflow-hidden border border-base-300 shadow-inner bg-slate-900">
-                  <iframe className="w-full h-full" src={document.ipfsGatewayUrl} />
+                <div className="flex-1 relative rounded-2xl overflow-hidden border border-base-300 shadow-inner bg-slate-900 min-h-[520px]">
+                  <iframe className="w-full h-full absolute inset-0" src={document.ipfsGatewayUrl} />
                 </div>
 
                 <button

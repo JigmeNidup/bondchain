@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  ArrowPathIcon,
   ArrowTopRightOnSquareIcon,
   ClockIcon,
   DocumentTextIcon,
@@ -89,7 +88,23 @@ const formatDate = (value: string) => {
   }).format(date);
 };
 
-const shortHash = (value: string) => `${value.slice(0, 12)}...${value.slice(-10)}`;
+const shortHash = (value: string) => `${value.slice(0, 8)}…${value.slice(-6)}`;
+
+const STATUS_STYLE: Record<string, string> = {
+  VERIFIED: "text-success",
+  SIGNED: "text-success",
+  PENDING: "text-warning",
+  REJECTED: "text-error",
+};
+
+const TABS: [HistoryTab, string, React.ElementType][] = [
+  ["all", "All", ClockIcon],
+  ["uploaded", "Files", DocumentTextIcon],
+  ["sent", "Sent", PaperAirplaneIcon],
+  ["received", "Received", InboxArrowDownIcon],
+  ["agency", "Agency", ShieldCheckIcon],
+  ["signed", "Signed", FingerPrintIcon],
+];
 
 const HistoryPage = () => {
   const [history, setHistory] = useState<HistoryResponse | null>(null);
@@ -114,10 +129,6 @@ const HistoryPage = () => {
     loadHistory();
   }, []);
 
-  const handleNdiSuccess = () => {
-    loadHistory();
-  };
-
   const empty = useMemo(() => {
     if (!history) return true;
     return (
@@ -130,204 +141,205 @@ const HistoryPage = () => {
   }, [history]);
 
   return (
-    <main className="mx-auto min-h-[calc(100dvh-80px)] w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <section className="flex flex-col gap-12">
-        {/* Page Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-base-300 pb-12">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary bg-primary/5 border border-primary/10 mb-6">
-              Immutable Records
-            </div>
-            <h1 className="text-3xl font-black text-base-content leading-tight">Digital Archive</h1>
-            <p className="mt-4 text-lg text-base-content/60 leading-relaxed">
-              Explore your complete audit trail of civic actions, signatures, and document provenance.
-            </p>
-          </div>
-          <div className="flex gap-4">
-            <button
-              className="btn btn-primary h-11 px-6 shadow-lg shadow-primary/20 text-sm"
-              onClick={() => setIsNdiModalOpen(true)}
-              disabled={loading}
-            >
-              {loading ? (
-                <ArrowPathIcon className="h-4 w-4 animate-spin mr-2" />
-              ) : (
-                <FingerPrintIcon className="h-4 w-4 mr-2" />
-              )}
-              Refresh Audit
-            </button>
-          </div>
+    <main className="mx-auto min-h-[calc(100dvh-80px)] w-full max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+      {/* Header */}
+      <div className="mb-10 flex items-start justify-between gap-6 border-b border-base-200 pb-8">
+        <div>
+          <h1 className="text-2xl font-black text-base-content">Digital Archive</h1>
+          <p className="mt-1 text-sm text-base-content/40">
+            Your complete audit trail of documents, signatures, and requests.
+          </p>
         </div>
+        <button
+          className="btn btn-ghost btn-sm h-9 gap-2 border border-base-200 text-xs font-bold"
+          onClick={() => setIsNdiModalOpen(true)}
+          disabled={loading}
+        >
+          <FingerPrintIcon className="h-4 w-4" />
+          {loading ? "Loading…" : "Refresh"}
+        </button>
+      </div>
 
-        {!history && (
-          <div className="py-24 card bg-base-200/50 border-dashed border-2 flex flex-col items-center text-center">
-            <div className="h-20 w-20 rounded-3xl bg-base-100 shadow-sm flex items-center justify-center text-base-content/20 mb-8 border border-base-300">
-              <ShieldCheckIcon className="h-10 w-10" />
+      {/* Not authenticated */}
+      {!history && !loading && !error && (
+        <div className="flex flex-col items-center gap-4 py-24 text-center">
+          <ShieldCheckIcon className="h-10 w-10 text-base-content/20" />
+          <p className="text-sm font-bold text-base-content/40">Authenticate to view your archive</p>
+          <button className="btn btn-primary btn-sm mt-2 h-9 px-6 text-xs" onClick={() => setIsNdiModalOpen(true)}>
+            Sign in with NDI
+          </button>
+        </div>
+      )}
+
+      {/* Loading skeleton */}
+      {loading && (
+        <div className="flex flex-col gap-3">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="h-16 animate-pulse rounded-xl bg-base-200" />
+          ))}
+        </div>
+      )}
+
+      {/* Error */}
+      {error && (
+        <div className="flex items-center gap-3 rounded-xl border border-error/10 bg-error/5 p-4 text-error">
+          <ExclamationTriangleIcon className="h-4 w-4 shrink-0" />
+          <span className="text-sm font-bold">{error}</span>
+        </div>
+      )}
+
+      {history && !loading && (
+        <div>
+          {/* Tabs */}
+          <div className="mb-6 flex gap-1 border-b border-base-200">
+            {TABS.map(([value, label, Icon]) => (
+              <button
+                key={value}
+                onClick={() => setTab(value)}
+                className={`flex items-center gap-1.5 px-3 pb-3 pt-1 text-xs font-bold transition-colors ${
+                  tab === value
+                    ? "border-b-2 border-primary text-primary"
+                    : "text-base-content/40 hover:text-base-content"
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {empty ? (
+            <div className="flex flex-col items-center gap-3 py-20 text-center">
+              <DocumentTextIcon className="h-8 w-8 text-base-content/20" />
+              <p className="text-sm font-bold text-base-content/40">No records yet.</p>
+              <Link href="/user-to-user" className="btn btn-primary btn-sm h-9 px-6 text-xs mt-2">
+                Create First Request
+              </Link>
             </div>
-            <h3 className="text-2xl font-black text-base-content">Encrypted Session Required</h3>
-            <p className="text-base-content/60 mt-4 max-w-sm leading-relaxed">
-              Your history is protected by Bhutan NDI sovereign keys. Please authenticate to decrypt your audit logs.
-            </p>
-            <button className="btn btn-primary mt-10 h-14 px-12 text-lg" onClick={() => setIsNdiModalOpen(true)}>
-              Sign in with NDI
-            </button>
-          </div>
-        )}
+          ) : (
+            <div className="overflow-x-auto rounded-xl border border-base-300 bg-base-100">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-base-300 bg-base-200">
+                    <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wider text-base-content/40">
+                      Type
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wider text-base-content/40">
+                      Document
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wider text-base-content/40">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wider text-base-content/40 hidden sm:table-cell">
+                      Date
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wider text-base-content/40 hidden md:table-cell">
+                      Hash
+                    </th>
+                    <th className="px-4 py-3" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {(tab === "all" || tab === "agency") &&
+                    history.agencyRequests.map(r => (
+                      <TableRow
+                        key={`agency-${r.token}`}
+                        icon={<ShieldCheckIcon className="h-3.5 w-3.5" />}
+                        type={r.service.agency.name}
+                        title={r.service.name}
+                        status={r.status}
+                        date={r.updatedAt}
+                        docHash={r.docHash || "0x0000000000000000000000000000000000000000000000000000000000000000"}
+                        href={r.verificationLink || r.certificate?.ipfsGatewayUrl || "/services"}
+                        actionLabel={r.verificationLink ? "View Proof" : r.certificate ? "Certificate" : "Track"}
+                      />
+                    ))}
 
-        {history && (
-          <div className="animate-in fade-in duration-700">
-            {/* Filter Tabs */}
-            <div className="flex flex-wrap gap-2 p-1.5 bg-base-300/50 rounded-[1.25rem] w-fit mb-10">
-              {[
-                ["all", "All Activity", ClockIcon],
-                ["uploaded", "Files", DocumentTextIcon],
-                ["sent", "Outbound", PaperAirplaneIcon],
-                ["received", "Inbound", InboxArrowDownIcon],
-                ["agency", "Agency", ShieldCheckIcon],
-                ["signed", "Executed", FingerPrintIcon],
-              ].map(([value, label, Icon]) => (
-                <button
-                  key={value as string}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
-                    tab === value
-                      ? "bg-base-100 text-primary shadow-sm scale-105"
-                      : "text-base-content/40 hover:text-base-content hover:bg-base-300/50"
-                  }`}
-                  onClick={() => setTab(value as HistoryTab)}
-                >
-                  <Icon className="h-4 w-4" />
-                  {label as string}
-                </button>
-              ))}
+                  {(tab === "all" || tab === "received") &&
+                    history.receivedRequests.map(r => (
+                      <TableRow
+                        key={`received-${r.token}`}
+                        icon={<InboxArrowDownIcon className="h-3.5 w-3.5" />}
+                        type="Received"
+                        title={r.document?.fileName || "Incoming Signature Request"}
+                        status={r.status}
+                        date={r.updatedAt}
+                        docHash={r.docHash}
+                        href={r.verificationLink || r.signingLink}
+                        actionLabel={r.verificationLink ? "View Proof" : "Sign"}
+                      />
+                    ))}
+
+                  {(tab === "all" || tab === "sent") &&
+                    history.sentRequests.map(r => (
+                      <TableRow
+                        key={`sent-${r.token}`}
+                        icon={<PaperAirplaneIcon className="h-3.5 w-3.5" />}
+                        type="Sent"
+                        title={r.document?.fileName || "Outbound Request"}
+                        status={r.status}
+                        date={r.updatedAt}
+                        docHash={r.docHash}
+                        href={r.verificationLink || r.signingLink}
+                        actionLabel={r.verificationLink ? "View Proof" : "Manage"}
+                      />
+                    ))}
+
+                  {(tab === "all" || tab === "uploaded") &&
+                    history.documents.map(d => (
+                      <TableRow
+                        key={`document-${d.id}`}
+                        icon={<DocumentTextIcon className="h-3.5 w-3.5" />}
+                        type="File"
+                        title={d.fileName || "Stored Document"}
+                        status={`${d.signatureCount} sig${d.signatureCount === 1 ? "" : "s"}`}
+                        date={d.createdAt}
+                        docHash={d.docHash}
+                        href={d.ipfsGatewayUrl}
+                        actionLabel="Preview"
+                      />
+                    ))}
+
+                  {(tab === "all" || tab === "signed") &&
+                    history.signatures.map(s => (
+                      <TableRow
+                        key={`signature-${s.signatureHash}`}
+                        icon={<FingerPrintIcon className="h-3.5 w-3.5" />}
+                        type="Signature"
+                        title="On-Chain Record"
+                        status="VERIFIED"
+                        date={s.createdAt}
+                        docHash={s.docHash}
+                        href={`/verify/${s.signatureHash}`}
+                        actionLabel="Verify"
+                      />
+                    ))}
+                </tbody>
+              </table>
             </div>
-
-            {empty ? (
-              <div className="py-20 text-center flex flex-col items-center">
-                <div className="h-16 w-16 rounded-full bg-base-200/50 flex items-center justify-center text-base-content/20 mb-6 border border-base-300">
-                  <DocumentTextIcon className="h-8 w-8" />
-                </div>
-                <h3 className="text-xl font-black text-base-content">No Records Found</h3>
-                <p className="text-base-content/60 mt-2">You haven&apos;t initiated any signing workflows yet.</p>
-                <Link href="/user-to-user" className="btn btn-primary mt-8 h-14 px-8">
-                  Create First Request
-                </Link>
-              </div>
-            ) : (
-              <div className="grid gap-6">
-                {(tab === "all" || tab === "agency") &&
-                  history.agencyRequests.map(request => (
-                    <HistoryCard
-                      key={`agency-${request.token}`}
-                      icon={<ShieldCheckIcon className="h-6 w-6" />}
-                      type={request.service.agency.name}
-                      title={request.service.name}
-                      status={request.status}
-                      date={request.updatedAt}
-                      docHash={request.docHash || "0x0000000000000000000000000000000000000000000000000000000000000000"}
-                      actionHref={request.verificationLink || request.certificate?.ipfsGatewayUrl || "/services"}
-                      actionLabel={
-                        request.verificationLink ? "View Proof" : request.certificate ? "Certificate" : "Track"
-                      }
-                      color="secondary"
-                    />
-                  ))}
-
-                {(tab === "all" || tab === "received") &&
-                  history.receivedRequests.map(request => (
-                    <HistoryCard
-                      key={`received-${request.token}`}
-                      icon={<InboxArrowDownIcon className="h-6 w-6" />}
-                      type="Received Request"
-                      title={request.document?.fileName || "Incoming Signature Request"}
-                      status={request.status}
-                      date={request.updatedAt}
-                      docHash={request.docHash}
-                      actionHref={request.verificationLink || request.signingLink}
-                      actionLabel={request.verificationLink ? "View Proof" : "Apply Signature"}
-                      color="secondary"
-                    />
-                  ))}
-
-                {(tab === "all" || tab === "sent") &&
-                  history.sentRequests.map(request => (
-                    <HistoryCard
-                      key={`sent-${request.token}`}
-                      icon={<PaperAirplaneIcon className="h-6 w-6" />}
-                      type="Sent Request"
-                      title={request.document?.fileName || "Outbound Execution"}
-                      status={request.status}
-                      date={request.updatedAt}
-                      docHash={request.docHash}
-                      actionHref={request.verificationLink || request.signingLink}
-                      actionLabel={request.verificationLink ? "View Proof" : "Manage"}
-                      color="primary"
-                    />
-                  ))}
-
-                {(tab === "all" || tab === "uploaded") &&
-                  history.documents.map(document => (
-                    <HistoryCard
-                      key={`document-${document.id}`}
-                      icon={<DocumentTextIcon className="h-6 w-6" />}
-                      type="File Upload"
-                      title={document.fileName || "Stored Document"}
-                      status={`${document.signatureCount} signature${document.signatureCount === 1 ? "" : "s"}`}
-                      date={document.createdAt}
-                      docHash={document.docHash}
-                      actionHref={document.ipfsGatewayUrl}
-                      actionLabel="Preview PDF"
-                      color="slate"
-                    />
-                  ))}
-
-                {(tab === "all" || tab === "signed") &&
-                  history.signatures.map(signature => (
-                    <HistoryCard
-                      key={`signature-${signature.signatureHash}`}
-                      icon={<FingerPrintIcon className="h-6 w-6" />}
-                      type="Signature Execution"
-                      title="On-Chain Audit Record"
-                      status="VERIFIED"
-                      date={signature.createdAt}
-                      docHash={signature.docHash}
-                      actionHref={`/verify/${signature.signatureHash}`}
-                      actionLabel="Provenance"
-                      color="primary"
-                    />
-                  ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {error && (
-          <div className="mt-8 rounded-2xl bg-error/5 border border-error/10 p-4 flex items-center gap-3 text-error font-bold">
-            <ExclamationTriangleIcon className="h-5 w-5 shrink-0" />
-            <span className="text-sm">{error}</span>
-          </div>
-        )}
-      </section>
+          )}
+        </div>
+      )}
 
       <NdiModal
         isOpen={isNdiModalOpen}
         onClose={() => setIsNdiModalOpen(false)}
-        onSuccess={handleNdiSuccess}
+        onSuccess={loadHistory}
         title="Refresh Archive"
       />
     </main>
   );
 };
 
-const HistoryCard = ({
+const TableRow = ({
   icon,
   type,
   title,
   status,
   date,
   docHash,
-  actionHref,
+  href,
   actionLabel,
-  color,
 }: {
   icon: React.ReactNode;
   type: string;
@@ -335,67 +347,37 @@ const HistoryCard = ({
   status: string;
   date: string;
   docHash: string;
-  actionHref: string;
+  href: string;
   actionLabel: string;
-  color: "primary" | "secondary" | "slate";
 }) => (
-  <div className="group card p-6 md:p-8 hover:bg-base-200/50 transition-all border-base-300">
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-      <div className="flex flex-1 min-w-0 gap-6">
-        <div
-          className={`h-13 w-13 shrink-0 rounded-2xl flex items-center justify-center shadow-inner transition-colors ${
-            color === "primary"
-              ? "bg-primary/5 text-primary group-hover:bg-primary group-hover:text-primary-content"
-              : color === "secondary"
-                ? "bg-secondary/5 text-secondary group-hover:bg-secondary group-hover:text-secondary-content"
-                : "bg-base-300/50 text-base-content/40 group-hover:bg-base-content group-hover:text-base-100"
-          }`}
-        >
-          {icon}
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-3 mb-2">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-base-content/40">{type}</span>
-            <span
-              className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest ${
-                status === "VERIFIED" || status === "SIGNED" || status.includes("signature")
-                  ? "bg-success/10 text-success border border-success/20"
-                  : "bg-base-300/50 text-base-content/40 border border-base-300"
-              }`}
-            >
-              {status}
-            </span>
-          </div>
-          <h3 className="text-xl font-black text-base-content mb-2 truncate">{title}</h3>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            <div className="flex items-center gap-2 text-xs font-bold text-base-content/40">
-              <ClockIcon className="h-4 w-4" />
-              {formatDate(date)}
-            </div>
-            <div className="flex items-center gap-2 text-xs font-mono text-base-content/20 group-hover:text-base-content/40 transition-colors">
-              <ShieldCheckIcon className="h-4 w-4" />
-              {shortHash(docHash)}
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="flex items-center gap-4">
-        <Link
-          href={actionHref}
-          className={`btn h-11 px-6 text-xs font-bold rounded-xl shadow-lg transition-all ${
-            color === "primary"
-              ? "btn-primary shadow-primary/20"
-              : color === "secondary"
-                ? "btn-secondary shadow-secondary/20"
-                : "btn-outline border-2"
-          }`}
-        >
-          {actionLabel}
-          <ArrowTopRightOnSquareIcon className="h-3 w-3 ml-1.5" />
-        </Link>
-      </div>
-    </div>
-  </div>
+  <tr className="border-b border-base-300 hover:bg-base-200 transition-colors">
+    <td className="px-4 py-3">
+      <span className="flex items-center gap-1.5 text-xs font-bold text-base-content/40">
+        <span className="text-base-content/30">{icon}</span>
+        {type}
+      </span>
+    </td>
+    <td className="px-4 py-3 max-w-[200px]">
+      <p className="truncate text-sm font-semibold text-base-content">{title}</p>
+    </td>
+    <td className="px-4 py-3">
+      <span className={`text-xs font-bold uppercase ${STATUS_STYLE[status.toUpperCase()] ?? "text-base-content/40"}`}>
+        {status}
+      </span>
+    </td>
+    <td className="hidden px-4 py-3 sm:table-cell">
+      <span className="text-xs text-base-content/40">{formatDate(date)}</span>
+    </td>
+    <td className="hidden px-4 py-3 md:table-cell">
+      <span className="font-mono text-[11px] text-base-content/30">{shortHash(docHash)}</span>
+    </td>
+    <td className="px-4 py-3 text-right">
+      <Link href={href} className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
+        {actionLabel}
+        <ArrowTopRightOnSquareIcon className="h-3 w-3" />
+      </Link>
+    </td>
+  </tr>
 );
 
 export default HistoryPage;
