@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { keccak256 } from "viem";
 import {
   ArrowTopRightOnSquareIcon,
+  CheckCircleIcon,
   ChevronRightIcon,
   ClockIcon,
   CubeIcon,
@@ -55,7 +57,33 @@ const VerifyPage = () => {
   const signatureHash = params.signatureHash;
   const [verification, setVerification] = useState<Verification | null>(null);
   const [selectedSignature, setSelectedSignature] = useState<SignatureChainItem | null>(null);
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
+  const [documentCheck, setDocumentCheck] = useState<{
+    fileName: string;
+    documentHash: string;
+    matchedCount: number;
+    totalCount: number;
+    results: { signatureHash: string; docHash: string; matched: boolean }[];
+  } | null>(null);
   const [error, setError] = useState("");
+
+  const verifyDocumentFile = async () => {
+    if (!documentFile || !verification) return;
+    const bytes = new Uint8Array(await documentFile.arrayBuffer());
+    const documentHash = keccak256(bytes);
+    const results = verification.chain.map(item => ({
+      signatureHash: item.signatureHash,
+      docHash: item.docHash,
+      matched: item.docHash.toLowerCase() === documentHash.toLowerCase(),
+    }));
+    setDocumentCheck({
+      fileName: documentFile.name,
+      documentHash,
+      matchedCount: results.filter(result => result.matched).length,
+      totalCount: results.length,
+      results,
+    });
+  };
 
   useEffect(() => {
     if (!signatureHash) return;
@@ -208,17 +236,71 @@ const VerifyPage = () => {
                       {verification.signature.txHash}
                     </p>
                   </div>
-                  {verification.document && (
-                    <Link
-                      href={verification.document.ipfsCid}
-                      className="btn btn-primary w-full h-14 text-sm mt-4 shadow-xl"
+
+                  <div className="rounded-2xl bg-neutral-content/10 p-4">
+                    <label className="block">
+                      <span className="mb-2 block text-[10px] font-black uppercase tracking-widest text-neutral-content/60">
+                        Document Verification
+                      </span>
+                      <input
+                        className="file-input file-input-bordered file-input-primary w-full bg-base-100 text-base-content"
+                        type="file"
+                        accept="application/pdf,.pdf"
+                        onChange={event => {
+                          setDocumentFile(event.target.files?.[0] || null);
+                          setDocumentCheck(null);
+                        }}
+                      />
+                    </label>
+                    <button
+                      className="btn btn-primary mt-3 h-12 w-full text-sm shadow-xl"
+                      disabled={!documentFile}
+                      onClick={verifyDocumentFile}
+                      type="button"
                     >
-                      <DocumentMagnifyingGlassIcon className="h-4 w-4 mr-2" />
-                      Preview PDF
-                    </Link>
-                  )}
+                      <DocumentMagnifyingGlassIcon className="mr-2 h-4 w-4" />
+                      Verify Document
+                    </button>
+                  </div>
                 </div>
               </div>
+
+              {documentCheck && (
+                <div
+                  className={`card p-8 ${
+                    documentCheck.matchedCount === documentCheck.totalCount
+                      ? "border-success/20 bg-success/5"
+                      : "border-warning/20 bg-warning/5"
+                  }`}
+                >
+                  <div
+                    className={`mb-5 flex items-center gap-3 ${
+                      documentCheck.matchedCount === documentCheck.totalCount ? "text-success" : "text-warning"
+                    }`}
+                  >
+                    {documentCheck.matchedCount === documentCheck.totalCount ? (
+                      <CheckCircleIcon className="h-6 w-6" />
+                    ) : (
+                      <ExclamationTriangleIcon className="h-6 w-6" />
+                    )}
+                    <h3 className="text-sm font-black text-base-content">Document Match</h3>
+                  </div>
+                  <p className="mb-4 text-sm text-base-content/60">
+                    {documentCheck.matchedCount} of {documentCheck.totalCount} signatures match the uploaded file.
+                  </p>
+                  <p className="mb-5 font-mono text-xs break-all text-base-content/60">{documentCheck.documentHash}</p>
+                  <div className="space-y-2">
+                    {documentCheck.results.map((result, index) => (
+                      <div key={result.signatureHash} className="flex items-center justify-between gap-3 text-xs">
+                        <span className="font-bold text-base-content/70">Signature #{index + 1}</span>
+                        <span className={`badge ${result.matched ? "badge-success" : "badge-warning"}`}>
+                          {result.matched ? "Matched" : "Different hash"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="card p-8 border-base-300">
                 <h3 className="text-sm font-black text-base-content mb-4">Provenance Summary</h3>

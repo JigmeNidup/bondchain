@@ -285,6 +285,111 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "getDocumentByHashAt",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "index",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "documentId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "ownerWallet",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "ipfsCid",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getDocumentCount",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getDocumentCountByHash",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getDocumentRecord",
+          inputs: [
+            {
+              name: "documentId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "ownerWallet",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "ipfsCid",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
           name: "owner",
           inputs: [],
           outputs: [
@@ -318,9 +423,9 @@ const deployedContracts = {
           ],
           outputs: [
             {
-              name: "created",
-              type: "bool",
-              internalType: "bool",
+              name: "documentId",
+              type: "uint256",
+              internalType: "uint256",
             },
           ],
           stateMutability: "nonpayable",
@@ -354,6 +459,12 @@ const deployedContracts = {
               type: "bytes32",
               indexed: true,
               internalType: "bytes32",
+            },
+            {
+              name: "documentId",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
             },
             {
               name: "owner",
@@ -397,12 +508,17 @@ const deployedContracts = {
         },
         {
           type: "error",
-          name: "DocumentAlreadyRegistered",
+          name: "DocumentIndexOutOfBounds",
           inputs: [
             {
               name: "docHash",
               type: "bytes32",
               internalType: "bytes32",
+            },
+            {
+              name: "index",
+              type: "uint256",
+              internalType: "uint256",
             },
           ],
         },
@@ -1145,7 +1261,7 @@ const deployedContracts = {
   },
   11155111: {
     IdentityRegistry: {
-      address: "0xac11d4d88f2e86bccc8a93929b105f54c84d5fdf",
+      address: "0x9adc1445e1814ee1f68a973db24708c35f68aa77",
       abi: [
         {
           type: "constructor",
@@ -1371,10 +1487,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 10863072,
+      deployedOnBlock: 10865716,
     },
     DocumentRegistry: {
-      address: "0x91418636cc0828fb7880c362e67c6ae960cb6b42",
+      address: "0xc4c9a15ecf1c8086241a72f4a21f7414f8236dbf",
       abi: [
         {
           type: "constructor",
@@ -1423,6 +1539,111 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "getDocumentByHashAt",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "index",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "documentId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "ownerWallet",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "ipfsCid",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getDocumentCount",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getDocumentCountByHash",
+          inputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getDocumentRecord",
+          inputs: [
+            {
+              name: "documentId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "docHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "ownerWallet",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "ipfsCid",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
           name: "owner",
           inputs: [],
           outputs: [
@@ -1456,9 +1677,9 @@ const deployedContracts = {
           ],
           outputs: [
             {
-              name: "created",
-              type: "bool",
-              internalType: "bool",
+              name: "documentId",
+              type: "uint256",
+              internalType: "uint256",
             },
           ],
           stateMutability: "nonpayable",
@@ -1492,6 +1713,12 @@ const deployedContracts = {
               type: "bytes32",
               indexed: true,
               internalType: "bytes32",
+            },
+            {
+              name: "documentId",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
             },
             {
               name: "owner",
@@ -1535,12 +1762,17 @@ const deployedContracts = {
         },
         {
           type: "error",
-          name: "DocumentAlreadyRegistered",
+          name: "DocumentIndexOutOfBounds",
           inputs: [
             {
               name: "docHash",
               type: "bytes32",
               internalType: "bytes32",
+            },
+            {
+              name: "index",
+              type: "uint256",
+              internalType: "uint256",
             },
           ],
         },
@@ -1583,10 +1815,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 10863072,
+      deployedOnBlock: 10865716,
     },
     SignatureLog: {
-      address: "0x6b67dd127e5e87fc69b583e79385069d5a6af286",
+      address: "0x688cc080cdc6a8d291d671baa8047abef087d188",
       abi: [
         {
           type: "constructor",
@@ -1924,10 +2156,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 10863072,
+      deployedOnBlock: 10865716,
     },
     WorkflowTracker: {
-      address: "0x7e9722cb5a59bb8b5eb0f5206bf13ba3fdb9d9fd",
+      address: "0x965f3bff76582be13bdd8b766431643530a510aa",
       abi: [
         {
           type: "constructor",
@@ -2278,7 +2510,361 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 10863072,
+      deployedOnBlock: 10865716,
+    },
+    AgencyRegistry: {
+      address: "0xa669f97db5856ee02160193a578f7c4faa24a919",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "initialOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "logAgencyAdminRegistered",
+          inputs: [
+            {
+              name: "agencyId",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "adminWalletHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "logAgencyEnrolled",
+          inputs: [
+            {
+              name: "agencyId",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "nameHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "logAgencyOfficerRegistered",
+          inputs: [
+            {
+              name: "agencyId",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "officerWalletHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "logAgencyServiceCreated",
+          inputs: [
+            {
+              name: "agencyId",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "serviceId",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "serviceNameHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "logAgencyWorkflowConfigured",
+          inputs: [
+            {
+              name: "agencyId",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "serviceId",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "workflowHash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "owner",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "renounceOwnership",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "transferOwnership",
+          inputs: [
+            {
+              name: "newOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "event",
+          name: "AgencyAdminRegistered",
+          inputs: [
+            {
+              name: "agencyId",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "adminWalletHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "AgencyEnrolled",
+          inputs: [
+            {
+              name: "agencyId",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "nameHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "AgencyOfficerRegistered",
+          inputs: [
+            {
+              name: "agencyId",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "officerWalletHash",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "AgencyServiceCreated",
+          inputs: [
+            {
+              name: "agencyId",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "serviceId",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "serviceNameHash",
+              type: "bytes32",
+              indexed: false,
+              internalType: "bytes32",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "AgencyWorkflowConfigured",
+          inputs: [
+            {
+              name: "agencyId",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "serviceId",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "workflowHash",
+              type: "bytes32",
+              indexed: false,
+              internalType: "bytes32",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "OwnershipTransferred",
+          inputs: [
+            {
+              name: "previousOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "newOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "EmptyAgencyId",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "EmptyMemberHash",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "EmptyNameHash",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "EmptyServiceId",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "EmptyWorkflowHash",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "OwnableInvalidOwner",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "OwnableUnauthorizedAccount",
+          inputs: [
+            {
+              name: "account",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 10865716,
     },
   },
 } as const;

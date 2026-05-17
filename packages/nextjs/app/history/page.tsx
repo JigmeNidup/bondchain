@@ -48,14 +48,35 @@ type HistoryRequest = {
   } | null;
 };
 
+type HistoryAgencyRequest = {
+  token: string;
+  docHash?: string | null;
+  status: string;
+  updatedAt: string;
+  verificationLink?: string | null;
+  service: {
+    name: string;
+    agency: { name: string };
+  };
+  document?: {
+    fileName?: string | null;
+    ipfsGatewayUrl: string;
+  } | null;
+  certificate?: {
+    fileName?: string | null;
+    ipfsGatewayUrl: string;
+  } | null;
+};
+
 type HistoryResponse = {
   documents: HistoryDocument[];
   signatures: HistorySignature[];
   sentRequests: HistoryRequest[];
   receivedRequests: HistoryRequest[];
+  agencyRequests: HistoryAgencyRequest[];
 };
 
-type HistoryTab = "all" | "uploaded" | "sent" | "received" | "signed";
+type HistoryTab = "all" | "uploaded" | "sent" | "received" | "signed" | "agency";
 
 const formatDate = (value: string) => {
   const date = new Date(value);
@@ -103,7 +124,8 @@ const HistoryPage = () => {
       history.documents.length === 0 &&
       history.signatures.length === 0 &&
       history.sentRequests.length === 0 &&
-      history.receivedRequests.length === 0
+      history.receivedRequests.length === 0 &&
+      history.agencyRequests.length === 0
     );
   }, [history]);
 
@@ -161,6 +183,7 @@ const HistoryPage = () => {
                 ["uploaded", "Files", DocumentTextIcon],
                 ["sent", "Outbound", PaperAirplaneIcon],
                 ["received", "Inbound", InboxArrowDownIcon],
+                ["agency", "Agency", ShieldCheckIcon],
                 ["signed", "Executed", FingerPrintIcon],
               ].map(([value, label, Icon]) => (
                 <button
@@ -191,6 +214,24 @@ const HistoryPage = () => {
               </div>
             ) : (
               <div className="grid gap-6">
+                {(tab === "all" || tab === "agency") &&
+                  history.agencyRequests.map(request => (
+                    <HistoryCard
+                      key={`agency-${request.token}`}
+                      icon={<ShieldCheckIcon className="h-6 w-6" />}
+                      type={request.service.agency.name}
+                      title={request.service.name}
+                      status={request.status}
+                      date={request.updatedAt}
+                      docHash={request.docHash || "0x0000000000000000000000000000000000000000000000000000000000000000"}
+                      actionHref={request.verificationLink || request.certificate?.ipfsGatewayUrl || "/services"}
+                      actionLabel={
+                        request.verificationLink ? "View Proof" : request.certificate ? "Certificate" : "Track"
+                      }
+                      color="secondary"
+                    />
+                  ))}
+
                 {(tab === "all" || tab === "received") &&
                   history.receivedRequests.map(request => (
                     <HistoryCard

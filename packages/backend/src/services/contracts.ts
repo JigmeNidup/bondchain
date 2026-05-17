@@ -67,6 +67,61 @@ const workflowAbi = [
   },
 ] as const;
 
+const agencyAbi = [
+  {
+    type: "function",
+    name: "logAgencyEnrolled",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "agencyId", type: "bytes32" },
+      { name: "nameHash", type: "bytes32" },
+    ],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "logAgencyAdminRegistered",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "agencyId", type: "bytes32" },
+      { name: "adminWalletHash", type: "bytes32" },
+    ],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "logAgencyOfficerRegistered",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "agencyId", type: "bytes32" },
+      { name: "officerWalletHash", type: "bytes32" },
+    ],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "logAgencyServiceCreated",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "agencyId", type: "bytes32" },
+      { name: "serviceId", type: "bytes32" },
+      { name: "serviceNameHash", type: "bytes32" },
+    ],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "logAgencyWorkflowConfigured",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "agencyId", type: "bytes32" },
+      { name: "serviceId", type: "bytes32" },
+      { name: "workflowHash", type: "bytes32" },
+    ],
+    outputs: [],
+  },
+] as const;
+
 const chainForRpc = (rpcUrl: string) => (rpcUrl.includes("11155111") || rpcUrl.includes("sepolia") ? sepolia : foundry);
 
 export const computeLinkageHash = (didKey: string, walletAddress: string) =>
@@ -75,6 +130,8 @@ export const computeLinkageHash = (didKey: string, walletAddress: string) =>
 export const computeDocumentHash = (buffer: Buffer) => keccak256(buffer);
 
 export const computeWalletHash = (walletAddress: string) => keccak256(toBytes(walletAddress.toLowerCase()));
+
+export const computeTextHash = (value: string) => keccak256(toBytes(value));
 
 export const ZERO_SIGNATURE_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000" as const;
 
@@ -154,6 +211,71 @@ export class ContractService {
       abi: workflowAbi,
       functionName: "advanceStep",
       args: [docHash, step, signerWallet],
+      account,
+    });
+    await publicClient.waitForTransactionReceipt({ hash: txHash });
+    return txHash;
+  }
+
+  async logAgencyEnrolled(agencyId: string, agencyName: string) {
+    const { config, publicClient, walletClient, account } = this.clients();
+    const txHash = await walletClient.writeContract({
+      address: config.chain.agencyRegistry,
+      abi: agencyAbi,
+      functionName: "logAgencyEnrolled",
+      args: [computeTextHash(agencyId), computeTextHash(agencyName)],
+      account,
+    });
+    await publicClient.waitForTransactionReceipt({ hash: txHash });
+    return txHash;
+  }
+
+  async logAgencyAdminRegistered(agencyId: string, adminWalletHash: Hex) {
+    const { config, publicClient, walletClient, account } = this.clients();
+    const txHash = await walletClient.writeContract({
+      address: config.chain.agencyRegistry,
+      abi: agencyAbi,
+      functionName: "logAgencyAdminRegistered",
+      args: [computeTextHash(agencyId), adminWalletHash],
+      account,
+    });
+    await publicClient.waitForTransactionReceipt({ hash: txHash });
+    return txHash;
+  }
+
+  async logAgencyOfficerRegistered(agencyId: string, officerWalletHash: Hex) {
+    const { config, publicClient, walletClient, account } = this.clients();
+    const txHash = await walletClient.writeContract({
+      address: config.chain.agencyRegistry,
+      abi: agencyAbi,
+      functionName: "logAgencyOfficerRegistered",
+      args: [computeTextHash(agencyId), officerWalletHash],
+      account,
+    });
+    await publicClient.waitForTransactionReceipt({ hash: txHash });
+    return txHash;
+  }
+
+  async logAgencyServiceCreated(agencyId: string, serviceId: string, serviceName: string) {
+    const { config, publicClient, walletClient, account } = this.clients();
+    const txHash = await walletClient.writeContract({
+      address: config.chain.agencyRegistry,
+      abi: agencyAbi,
+      functionName: "logAgencyServiceCreated",
+      args: [computeTextHash(agencyId), computeTextHash(serviceId), computeTextHash(serviceName)],
+      account,
+    });
+    await publicClient.waitForTransactionReceipt({ hash: txHash });
+    return txHash;
+  }
+
+  async logAgencyWorkflowConfigured(agencyId: string, serviceId: string, workflowJson: string) {
+    const { config, publicClient, walletClient, account } = this.clients();
+    const txHash = await walletClient.writeContract({
+      address: config.chain.agencyRegistry,
+      abi: agencyAbi,
+      functionName: "logAgencyWorkflowConfigured",
+      args: [computeTextHash(agencyId), computeTextHash(serviceId), computeTextHash(workflowJson)],
       account,
     });
     await publicClient.waitForTransactionReceipt({ hash: txHash });

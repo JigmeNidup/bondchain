@@ -2,12 +2,14 @@
 pragma solidity ^0.8.20;
 
 import { Test } from "forge-std/Test.sol";
+import { AgencyRegistry } from "../contracts/AgencyRegistry.sol";
 import { DocumentRegistry } from "../contracts/DocumentRegistry.sol";
 import { IdentityRegistry } from "../contracts/IdentityRegistry.sol";
 import { SignatureLog } from "../contracts/SignatureLog.sol";
 import { WorkflowTracker } from "../contracts/WorkflowTracker.sol";
 
 contract BondChainTest is Test {
+    AgencyRegistry private agencyRegistry;
     IdentityRegistry private identityRegistry;
     DocumentRegistry private documentRegistry;
     SignatureLog private signatureLog;
@@ -20,9 +22,12 @@ contract BondChainTest is Test {
     bytes32 private sigHash = keccak256("signature");
     bytes32 private payloadHash = keccak256(abi.encodePacked(docHash, bytes32(0)));
     bytes32 private signerHash = keccak256(abi.encodePacked(address(0xB0B)));
+    bytes32 private agencyId = keccak256("agency");
+    bytes32 private serviceId = keccak256("service");
 
     function setUp() public {
         vm.startPrank(owner);
+        agencyRegistry = new AgencyRegistry(owner);
         identityRegistry = new IdentityRegistry(owner);
         documentRegistry = new DocumentRegistry(owner);
         signatureLog = new SignatureLog(owner);
@@ -123,5 +128,20 @@ contract BondChainTest is Test {
         assertEq(currentStep, 3);
         assertEq(uint8(status), uint8(WorkflowTracker.WorkflowStatus.Approved));
         assertEq(verificationUrl, "https://bondchain.app/verify/demo");
+    }
+
+    function testLogsAgencyLifecycleEvents() public {
+        vm.startPrank(owner);
+        agencyRegistry.logAgencyEnrolled(agencyId, keccak256("Ministry"));
+        agencyRegistry.logAgencyAdminRegistered(agencyId, signerHash);
+        agencyRegistry.logAgencyOfficerRegistered(agencyId, keccak256("officer"));
+        agencyRegistry.logAgencyServiceCreated(agencyId, serviceId, keccak256("Permit"));
+        agencyRegistry.logAgencyWorkflowConfigured(agencyId, serviceId, keccak256("workflow"));
+        vm.stopPrank();
+    }
+
+    function testOnlyOwnerCanLogAgencyLifecycle() public {
+        vm.expectRevert();
+        agencyRegistry.logAgencyEnrolled(agencyId, keccak256("Ministry"));
     }
 }

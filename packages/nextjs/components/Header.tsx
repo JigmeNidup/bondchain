@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Bars3Icon,
+  BuildingOfficeIcon,
   ClockIcon,
   DocumentCheckIcon,
   FingerPrintIcon,
@@ -36,9 +37,19 @@ export const menuLinks: HeaderMenuLink[] = [
     icon: <UserGroupIcon className="h-4 w-4" />,
   },
   {
-    label: "API Sign",
-    href: "/sign",
+    label: "Services",
+    href: "/services",
+    icon: <BuildingOfficeIcon className="h-4 w-4" />,
+  },
+  {
+    label: "Agency",
+    href: "/agency",
     icon: <DocumentCheckIcon className="h-4 w-4" />,
+  },
+  {
+    label: "Admin",
+    href: "/admin",
+    icon: <ShieldCheckIcon className="h-4 w-4" />,
   },
   {
     label: "History",
@@ -46,8 +57,8 @@ export const menuLinks: HeaderMenuLink[] = [
     icon: <ClockIcon className="h-4 w-4" />,
   },
   {
-    label: "Verify",
-    href: "/verify/demo",
+    label: "Verify Document",
+    href: "/verify/document",
     icon: <ShieldCheckIcon className="h-4 w-4" />,
   },
 ];

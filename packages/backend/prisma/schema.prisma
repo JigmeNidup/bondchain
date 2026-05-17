@@ -19,6 +19,7 @@ model User {
   documents           Document[]  @relation("UserDocuments")
   signatures          Signature[] @relation("UserSignatures")
   peerRequests        PeerSigningRequest[] @relation("PeerRequestRequester")
+  agencyRequests      AgencyServiceRequest[] @relation("CitizenAgencyRequests")
 }
 
 model Document {
@@ -33,6 +34,8 @@ model Document {
   createdAt           DateTime    @default(now())
   owner               User        @relation("UserDocuments", fields: [ownerDid], references: [didKey])
   peerRequests        PeerSigningRequest[]
+  agencyRequests      AgencyServiceRequest[]
+  issuedCertificates  AgencyIssuedCertificate[]
 
   @@index([docHash])
 }
@@ -112,4 +115,163 @@ model PeerSigningRequest {
   @@index([targetCidHash])
   @@index([docHash])
   @@index([documentId])
+}
+
+model Agency {
+  id                  String      @id @default(cuid())
+  name                String
+  status              String      @default("INVITED")
+  adminEmail          String
+  adminCidHash        String
+  adminDid            String?
+  createdByDid        String
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  invitations         AgencyInvitation[]
+  members             AgencyMember[]
+  services            AgencyService[]
+
+  @@index([status])
+}
+
+model AgencyInvitation {
+  id                  String      @id @default(cuid())
+  token               String      @unique
+  agencyId            String
+  email               String
+  cidHash             String
+  status              String      @default("PENDING")
+  acceptedByDid       String?
+  acceptedAt          DateTime?
+  createdAt           DateTime    @default(now())
+  agency              Agency      @relation(fields: [agencyId], references: [id])
+
+  @@index([agencyId])
+}
+
+model AgencyMember {
+  id                  String      @id @default(cuid())
+  agencyId            String
+  didKey              String
+  email               String
+  cidHash             String?
+  role                String
+  status              String      @default("ACTIVE")
+  createdAt           DateTime    @default(now())
+  agency              Agency      @relation(fields: [agencyId], references: [id])
+  assignedSteps       AgencyServiceWorkflowStep[]
+  requestSteps        AgencyRequestStep[]
+
+  @@unique([agencyId, didKey])
+  @@index([didKey])
+  @@index([agencyId, role])
+}
+
+model AgencyOfficerInvitation {
+  id                  String      @id @default(cuid())
+  token               String      @unique
+  agencyId            String
+  email               String
+  cidHash             String
+  status              String      @default("PENDING")
+  acceptedByDid       String?
+  acceptedAt          DateTime?
+  createdAt           DateTime    @default(now())
+
+  @@index([agencyId])
+}
+
+model AgencyService {
+  id                  String      @id @default(cuid())
+  agencyId            String
+  name                String
+  description         String?
+  requirementMode     String      @default("DOCUMENT_REQUIRED")
+  active              Boolean     @default(true)
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  agency              Agency      @relation(fields: [agencyId], references: [id])
+  workflowSteps       AgencyServiceWorkflowStep[]
+  requests            AgencyServiceRequest[]
+
+  @@index([agencyId])
+  @@index([active])
+}
+
+model AgencyServiceWorkflowStep {
+  id                  String      @id @default(cuid())
+  serviceId           String
+  stepNumber          Int
+  role                String
+  memberId            String
+  createdAt           DateTime    @default(now())
+  service             AgencyService @relation(fields: [serviceId], references: [id])
+  member              AgencyMember @relation(fields: [memberId], references: [id])
+
+  @@unique([serviceId, stepNumber])
+  @@index([memberId])
+}
+
+model AgencyServiceRequest {
+  id                  String      @id @default(cuid())
+  token               String      @unique
+  serviceId           String
+  citizenDid          String
+  citizenEmail        String?
+  metadataJson        String
+  documentId          String?
+  docHash             String?
+  citizenSignatureHash String?
+  latestSignatureHash String?
+  status              String      @default("PENDING")
+  currentStepNumber   Int         @default(1)
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  completedAt         DateTime?
+  service             AgencyService @relation(fields: [serviceId], references: [id])
+  citizen             User        @relation("CitizenAgencyRequests", fields: [citizenDid], references: [didKey])
+  document            Document?   @relation(fields: [documentId], references: [id])
+  steps               AgencyRequestStep[]
+  certificate         AgencyIssuedCertificate?
+
+  @@index([serviceId])
+  @@index([citizenDid])
+  @@index([status])
+}
+
+model AgencyRequestStep {
+  id                  String      @id @default(cuid())
+  requestId           String
+  stepNumber          Int
+  role                String
+  memberId            String
+  actionToken         String      @unique
+  status              String      @default("PENDING")
+  signatureHash       String?
+  txHash              String?
+  reason              String?
+  createdAt           DateTime    @default(now())
+  actedAt             DateTime?
+  request             AgencyServiceRequest @relation(fields: [requestId], references: [id])
+  member              AgencyMember @relation(fields: [memberId], references: [id])
+
+  @@unique([requestId, stepNumber])
+  @@index([memberId])
+  @@index([requestId, status])
+}
+
+model AgencyIssuedCertificate {
+  id                  String      @id @default(cuid())
+  requestId           String      @unique
+  documentId          String
+  signatureHash       String?
+  credentialStatus    String      @default("PENDING")
+  credInviteUrl       String?
+  deepLinkUrl         String?
+  issueCredThreadId   String?
+  relationshipDid     String?
+  revocationId        String?
+  createdAt           DateTime    @default(now())
+  request             AgencyServiceRequest @relation(fields: [requestId], references: [id])
+  document            Document    @relation(fields: [documentId], references: [id])
 }

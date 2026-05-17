@@ -5,6 +5,7 @@ type Config = {
   frontendOrigin: string;
   databaseUrl: string;
   sessionSecret: string;
+  platformAdminDidKeys: string[];
   ndi: {
     clientId: string;
     clientSecret: string;
@@ -13,6 +14,7 @@ type Config = {
     natsWss: string;
     nkeySeed: string;
     foundationalSchema: string;
+    issuerSchemaId: string;
   };
   privy: {
     appId: string;
@@ -34,6 +36,7 @@ type Config = {
     documentRegistry: `0x${string}`;
     signatureLog: `0x${string}`;
     workflowTracker: `0x${string}`;
+    agencyRegistry: `0x${string}`;
   };
 };
 
@@ -50,6 +53,10 @@ export const getConfig = (): Config => ({
   frontendOrigin: required("FRONTEND_ORIGIN", "http://localhost:3000"),
   databaseUrl: required("DATABASE_URL"),
   sessionSecret: required("SESSION_SECRET"),
+  platformAdminDidKeys: (process.env.PLATFORM_ADMIN_DID_KEYS || "")
+    .split(",")
+    .map(value => value.trim())
+    .filter(Boolean),
   ndi: {
     clientId: required("NDI_CLIENT_ID", "3tq7ho23g5risndd90a76jre5f"),
     clientSecret: required("NDI_CLIENT_SECRET", "111rvn964mucumr6c3qq3n2poilvq5v92bkjh58p121nmoverquh"),
@@ -60,6 +67,10 @@ export const getConfig = (): Config => ({
     foundationalSchema: required(
       "NDI_FOUNDATIONAL_SCHEMA",
       "https://dev-schema.ngotag.com/schemas/c7952a0a-e9b5-4a4b-a714-1e5d0a1ae076",
+    ),
+    issuerSchemaId: required(
+      "NDI_ISSUER_SCHEMA_ID",
+      "https://dev-schema.ngotag.com/schemas/6e6ae22d-8391-439e-8b74-16603777a782",
     ),
   },
   privy: {
@@ -82,5 +93,6 @@ export const getConfig = (): Config => ({
     documentRegistry: address("DOCUMENT_REGISTRY_ADDRESS"),
     signatureLog: address("SIGNATURE_LOG_ADDRESS"),
     workflowTracker: address("WORKFLOW_TRACKER_ADDRESS"),
+    agencyRegistry: address("AGENCY_REGISTRY_ADDRESS"),
   },
 });

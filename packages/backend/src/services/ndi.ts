@@ -107,6 +107,37 @@ export class NDIService {
     return body.data;
   }
 
+  async issueCredential(input: {
+    holderDID: string;
+    credentialData: Record<string, string | number>;
+    schemaId?: string;
+  }) {
+    const config = getConfig();
+    const token = await this.authenticate();
+    const response = await fetch(`${config.ndi.apiBase}/issuer/v1/issue-credential`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        credentialData: input.credentialData,
+        schemaId: input.schemaId || config.ndi.issuerSchemaId,
+        holderDID: input.holderDID,
+      }),
+    });
+
+    if (!response.ok) throw new Error(`NDI credential issuance failed: ${response.status} ${await response.text()}`);
+    const body = await response.json();
+    return body.data as {
+      credInviteURL?: string;
+      deepLinkURL?: string;
+      issueCredThreadId?: string;
+      relationshipDid?: string;
+      revocationId?: string;
+    };
+  }
+
   getProofResult(threadId: string) {
     return proofResults.get(threadId) || null;
   }
